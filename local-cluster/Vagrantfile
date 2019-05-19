@@ -142,7 +142,7 @@ EOF
   end
 
   # Worker Node  
-  (1..2).each do |i|
+  (1..3).each do |i|
     config.vm.define "k8s-worker#{i}" do |worker|
       worker.vm.box = "centos/7"
       worker.vm.hostname = "k8s-worker#{i}"
