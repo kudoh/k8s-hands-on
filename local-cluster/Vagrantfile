@@ -87,15 +87,10 @@ EOF
 
     IPADDR=$(ip a show eth1 | grep inet | grep -v inet6 | awk '{print $2}' | cut -f1 -d/)
     HOSTNAME=$(hostname -s)
-    # Controll Plane初期化(continerd, flannel)
-    # 使用するCRI/CNIによってパラメータ調整が必要
+    # Controll Plane初期化(continerd)
+    # 使用するCRI/CNIによってパラメータ調整が必要. FlannelはPod CIDRが`10.244.0.0/16`である必要がある
     kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-sans=$IPADDR \
       --node-name $HOSTNAME --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
-
-    # admin用に生成されたkubeconfigをvagrantユーザで使用可能にする(Option??)
-    # sudo --user=vagrant mkdir -p /home/vagrant/.kube
-    # cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-    # chown $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
 
     # CNI-flannel
     # https://github.com/coreos/flannel
