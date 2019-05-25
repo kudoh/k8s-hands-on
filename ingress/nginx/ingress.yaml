@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1beta1
 metadata: 
   name: ingress
   annotations:
+    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
   - host: frieza.dev
@@ -11,9 +12,9 @@ spec:
       - path: /app1
         backend: 
           serviceName: app1
-          servicePort: 80
+          servicePort: 3000
       - path: /app2
         backend: 
           serviceName: app2
-          servicePort: 80
+          servicePort: 3000
 

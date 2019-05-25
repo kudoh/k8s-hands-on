@@ -30,7 +30,7 @@ spec:
         app: app1
     spec:
       containers:
-      - image: kudohn/app1:v1
+      - image: kudohn/app1:v1.1
         name: app1
         ports:
           - name: http
