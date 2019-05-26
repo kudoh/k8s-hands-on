@@ -1,0 +1,15 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-sparse-sc
+  labels:
+    component: openebs-sc
+  annotations:
+    openebs.io/cas-type: cstor
+    # 2つのVolumeにデータをレプリケーションする
+    cas.openebs.io/config: |
+      - name: StoragePoolClaim
+        value: "cstor-pool"
+      - name: ReplicaCount
+        value: "2"
+provisioner: openebs.io/provisioner-iscsi
