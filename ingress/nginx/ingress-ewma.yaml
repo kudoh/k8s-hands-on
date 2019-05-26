@@ -1,0 +1,22 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+metadata: 
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # アルゴリズムの変更
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+spec:
+  rules:
+  - host: frieza.dev
+    http:
+      paths:
+      - path: /app1
+        backend: 
+          serviceName: app1
+          servicePort: 3000
+      - path: /app2
+        backend: 
+          serviceName: app2
+          servicePort: 3000
+

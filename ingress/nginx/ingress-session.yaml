@@ -1,0 +1,23 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+metadata: 
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # Session Affinityの設定
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "NGINX_SESSION"
+spec:
+  rules:
+  - host: frieza.dev
+    http:
+      paths:
+      - path: /app1
+        backend: 
+          serviceName: app1
+          servicePort: 3000
+      - path: /app2
+        backend: 
+          serviceName: app2
+          servicePort: 3000
+
