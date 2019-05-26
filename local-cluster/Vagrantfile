@@ -6,7 +6,6 @@ k8s_version = "1.14"
 Vagrant.configure("2") do |config|
 
   $common_setup_script = <<-SCRIPT
-  echo I am provisioning...
 
   # SWAP無効化(kubelet要件)
   swapoff -a
@@ -81,41 +80,47 @@ EOF
   systemctl daemon-reload
   systemctl restart kubelet
   
+  # Install iSCSI for OpenEBS
+  yum install iscsi-initiator-utils -y
+  systemctl enable iscsid && sudo systemctl start iscsid
+
   SCRIPT
 
   $master_node_script = <<-SCRIPT
 
-    IPADDR=$(ip a show eth1 | grep inet | grep -v inet6 | awk '{print $2}' | cut -f1 -d/)
-    HOSTNAME=$(hostname -s)
-    # Controll Plane初期化(continerd)
-    # 使用するCRI/CNIによってパラメータ調整が必要. FlannelはPod CIDRが`10.244.0.0/16`である必要がある
-    kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-sans=$IPADDR \
-      --node-name $HOSTNAME --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
+  IPADDR=$(ip a show eth1 | grep inet | grep -v inet6 | awk '{print $2}' | cut -f1 -d/)
+  HOSTNAME=$(hostname -s)
+  # Controll Plane初期化(continerd)
+  # 使用するCRI/CNIによってパラメータ調整が必要. FlannelはPod CIDRが`10.244.0.0/16`である必要がある
+  kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-sans=$IPADDR \
+    --node-name $HOSTNAME --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
 
-    # CNI-flannel
-    # https://github.com/coreos/flannel
-    # https://github.com/coreos/flannel/blob/master/Documentation/troubleshooting.md#vagrant
-    # https://medium.com/@anilkreddyr/kubernetes-with-flannel-understanding-the-networking-part-1-7e1fe51820e4
-    export KUBECONFIG=/etc/kubernetes/admin.conf
-    kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/local-cluster/kube-flannel.yml
-    
-    # kubeadm join スクリプト作成    
-    mkdir -p /home/vagrant/shared
-    kubeadm token create --print-join-command > /home/vagrant/shared/kubeadm_join_cmd.sh
-    chmod +x /home/vagrant/shared/kubeadm_join_cmd.sh
+  # CNI-flannel
+  # https://github.com/coreos/flannel
+  # https://github.com/coreos/flannel/blob/master/Documentation/troubleshooting.md#vagrant
+  # https://medium.com/@anilkreddyr/kubernetes-with-flannel-understanding-the-networking-part-1-7e1fe51820e4
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+  kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/local-cluster/kube-flannel.yml
+  
+  # kubeadm join スクリプト作成    
+  mkdir -p /home/vagrant/shared
+  kubeadm token create --print-join-command > /home/vagrant/shared/kubeadm_join_cmd.sh
+  chmod +x /home/vagrant/shared/kubeadm_join_cmd.sh
 
-    # ホストOS向けkubrectlアカウント作成
-    kubectl create serviceaccount tester
-    SECRET_NAME=$(kubectl get serviceaccount tester -o jsonpath='{.secrets[0].name}')
-    kubectl create clusterrolebinding --clusterrole=cluster-admin --serviceaccount=default:tester tester-admin
-    kubectl get secret $SECRET_NAME -o jsonpath='{.data.token}' | base64 --decode > /home/vagrant/shared/token
-    kubectl get secret $SECRET_NAME -o jsonpath='{.data.ca\\.crt}' | base64 --decode > /home/vagrant/shared/k8s-ca.crt
+  # ホストOS向けkubrectlアカウント作成
+  kubectl create serviceaccount tester
+  SECRET_NAME=$(kubectl get serviceaccount tester -o jsonpath='{.secrets[0].name}')
+  kubectl create clusterrolebinding --clusterrole=cluster-admin --serviceaccount=default:tester tester-admin
+  kubectl get secret $SECRET_NAME -o jsonpath='{.data.token}' | base64 --decode > /home/vagrant/shared/token
+  kubectl get secret $SECRET_NAME -o jsonpath='{.data.ca\\.crt}' | base64 --decode > /home/vagrant/shared/k8s-ca.crt
 
   SCRIPT
 
   $worker_node_script = <<-SCRIPT
-    echo "woker node settings..."
-    sh /home/vagrant/shared/kubeadm_join_cmd.sh
+
+  echo "woker node settings..."
+  sh /home/vagrant/shared/kubeadm_join_cmd.sh
+
   SCRIPT
   
   config.vm.provision "shell", inline: $common_setup_script
