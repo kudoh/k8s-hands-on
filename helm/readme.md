@@ -7,7 +7,7 @@ brew install kubernetes-helm
 helm version
 ```
 
-## using Tiller as server side component
+## using Helm and Tiller as server side components
 ### Set up
 ```bash
 # RBAC Settings
@@ -24,7 +24,7 @@ helm upgrade --install kubernetes-dashboard stable/kubernetes-dashboard --namesp
   --set rbac.clusterAdminRole=true --wait
 ```
 
-## using Tiller as client side commonent
+## using Helm as client side commonent
 
 ### Set up
 ```bash
