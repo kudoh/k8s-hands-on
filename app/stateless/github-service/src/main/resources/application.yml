@@ -1,0 +1,8 @@
+github:
+  api-url: https://api.github.com
+  media-type: application/vnd.github.v3+json
+#  user: foo
+#  password: bar
+  repo-search-path: /search/repositories
+
+
