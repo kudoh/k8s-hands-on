@@ -1,47 +1,69 @@
 package com.example.githubservice;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
-public class Repository {
-
-    private static ObjectMapper objectMapper = new ObjectMapper();
+class Repository {
 
     private Long id;
     private String name;
+    @JsonProperty("full_name")
     private String fullName;
+
+    @JsonProperty(access = Access.READ_ONLY)
     private String owner;
+    @JsonProperty(value = "avatar_url", access = Access.READ_ONLY)
     private String avatarUrl;
+
+    @JsonProperty("html_url")
     private String htmlUrl;
     private String description;
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
+    @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
     private int size;
-    private int starGazersCount;
+    @JsonProperty("open_issues_count")
+    private int openIssuesCount;
+    @JsonProperty("watchers_count")
     private int watchersCount;
     private String language;
+    @JsonProperty("fork_count")
     private int forkCount;
     private double score;
 
-    public static Repository fromGithub(Map<String, Object> input) {
-        return objectMapper.convertValue(input, Repository.class);
-//        Map<String, Object> owner = (Map<String, Object>) input.get("owner");
-//        return new Repository(
-//                (Long)input.get("id"), (String)input.get("name"), input.get("full_name"),
-//                owner.get("login"), owner.get("avatar_url"), input.get("html_url"),
-//                input.get("description"), LocalDateTime.parse((String)input.get("created_at")), LocalDateTime.parse((String)input.get("updated_at")),
-//                (int)input.get("size"), (int)input.get("stargazers_count"), (int)input.get("watchers_count"),
-//                input.get("language"), (int)input.get("fork_count"), (double)input.get("score")
-//        );
+    @JsonProperty(access = Access.READ_ONLY)
+    private String license;
+
+    @JsonProperty("owner")
+    void unpackOwner(Map<String, String> owner) {
+        this.owner = owner.get("login");
+        this.avatarUrl = owner.get("avatar_url");
+    }
+
+    @JsonProperty("license")
+    void unpackLicense(Map<String, String> license) {
+        if (license == null) {
+            this.license = "Unknown";
+        } else {
+            this.license = license.get("name");
+        }
+    }
+
+    static Repository fromGithub(Object input, ObjectMapper mapper) {
+        log.debug("input:{}", input);
+        return mapper.convertValue(input, Repository.class);
     }
 }

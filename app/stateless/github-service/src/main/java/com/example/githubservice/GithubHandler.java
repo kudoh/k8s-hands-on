@@ -3,6 +3,7 @@ package com.example.githubservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -14,18 +15,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class GithubHandler {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper ;
     private final GithubProps props;
     private WebClient client;
 
-    public GithubHandler(GithubProps props) {
+    public GithubHandler(ObjectMapper objectMapper, GithubProps props) {
+        this.objectMapper = objectMapper;
         this.props = props;
     }
 
@@ -37,23 +39,27 @@ public class GithubHandler {
     }
 
     Mono<ServerResponse> query(ServerRequest request) {
-        log.info("@@@@{}", props);
-        UriComponents uri = UriComponentsBuilder.fromPath(props.getRepoSearchPath())
-                .queryParam("q", request.queryParam("query").orElse("")).build();
 
+        UriComponents uri = UriComponentsBuilder.fromPath(props.getRepoSearchPath())
+                .queryParam("q", request.queryParam("query").orElse(""))
+                .queryParam("sort", "stars")
+                .build();
+
+        log.info("retrieving repositories from github for {}", uri.toUriString());
+        //noinspection unchecked
         return client.get()
                 .uri(uri.toUriString())
                 .accept(MediaType.valueOf(props.getMediaType()))
                 .headers(headers -> headers.setBasicAuth(props.getUser(), props.getPassword()))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Map<String, Object>>>() {})
-                .map(resp -> resp.get("items"))
-                .flux()
-                .map(Repository::fromGithub)
-                .reduce(new ArrayList<>(), (acc, repository) -> {
-                    acc.add(repository);
-                    return acc;
-                })
+                .onStatus(HttpStatus::is4xxClientError,
+                    response -> Mono.error(new RuntimeException("Client Error " + response.statusCode())))
+                .onStatus(HttpStatus::is5xxServerError,
+                    response -> Mono.error(new RuntimeException("Server Error " + response.statusCode())))
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .flatMapIterable(resp -> (List<Object>) resp.get("items"))
+                .map(in -> Repository.fromGithub(in, objectMapper))
+                .collectList()
                 .flatMap(items -> ServerResponse.ok().body(BodyInserters.fromObject(items)));
     }
 }
