@@ -16,6 +16,6 @@ public class GithubRouter {
     @Bean
     RouterFunction<ServerResponse> route(GithubHandler handler) {
         return RouterFunctions.route(
-                GET("/repos").and(accept(MediaType.APPLICATION_JSON)), handler::query);
+                GET("/github/repos").and(accept(MediaType.APPLICATION_JSON)), handler::query);
     }
 }
