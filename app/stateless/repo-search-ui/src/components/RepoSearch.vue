@@ -24,7 +24,7 @@
               <th scope="col">リポジトリ</th>
               <th scope="col">言語</th>
               <th scope="col">説明</th>
-              <th scope="col">Lisence</th>
+              <th scope="col">License</th>
               <th scope="col">オーナー</th>
               <th scope="col">Star</th>
               <th scope="col">Open Issue</th>
