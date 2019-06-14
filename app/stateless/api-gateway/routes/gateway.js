@@ -9,7 +9,7 @@ const client = axios.create({
   timeout: 5000
 });
 
-router.get('/repos', check('query').exists(), checkValidationResult, function(req, res, next) {
+router.get('/repos', check('query').not().isEmpty(), checkValidationResult, function(req, res, next) {
   console.log(`serach parameter: ${req.query.query}`);
   client.get(`/repos?query=${req.query.query}`)
     .then(result => {
