@@ -1,9 +1,9 @@
 kind: Ingress
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
 metadata: 
   name: ingress
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.global-static-ip-name: "frieza-world"
     # Let's Encrypt Issuer
     certmanager.k8s.io/issuer: "letsencrypt-staging"
     certmanager.k8s.io/acme-challenge-type: http01
@@ -11,10 +11,10 @@ spec:
   # IngressのTLS設定
   tls:
   - hosts:
-    - frieza.dev
+    - "cloud.frieza.dev"
     secretName: letsencrypt-staging
   rules:
-  - host: frieza.dev
+  - host: cloud.frieza.dev
     http:
       paths:
       - path: /app1
