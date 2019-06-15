@@ -26,24 +26,24 @@ fi
 sleep 30
 
 # MetalLB
-# kubectl create namespace metallb-system
-# helm install --name metallb stable/metallb --namespace metallb-system
-# kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/ingress/metallb-configmap.yaml
-# rc=$?
-# if [[ $rc != 0 ]] ;then
-#   echo "unable to install MetalLB..."
-#   exit 1
-# fi
+kubectl create namespace metallb-system
+helm install --name metallb stable/metallb --namespace metallb-system
+kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/ingress/metallb-configmap.yaml
+rc=$?
+if [[ $rc != 0 ]] ;then
+  echo "unable to install MetalLB..."
+  exit 1
+fi
 
-# sleep 30
+sleep 30
 
-# # Nginx Ingress Controller
-# helm upgrade nginx-ingress --install stable/nginx-ingress --set controller.replicaCount=2
-# rc=$?
-# if [[ $rc != 0 ]] ;then
-#   echo "unable to install Ingress Controller..."
-#   exit 1
-# fi
+# Nginx Ingress Controller
+helm upgrade nginx-ingress --install stable/nginx-ingress --set controller.replicaCount=2
+rc=$?
+if [[ $rc != 0 ]] ;then
+  echo "unable to install Ingress Controller..."
+  exit 1
+fi
 
 # OpenEBS
 kubectl create ns openebs
