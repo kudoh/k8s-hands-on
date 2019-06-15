@@ -14,5 +14,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/app1', indexRouter);
+app.use('/', (req, res) => {
+    res.status(200).end();
+})
 
 module.exports = app;
