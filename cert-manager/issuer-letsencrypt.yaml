@@ -4,13 +4,16 @@ metadata:
   name: letsencrypt-staging
 spec:
   acme:
-    # The ACME server URL
+    # Let's Encryptの証明書発行URL(ステージング環境用なのでTrustedではない)
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    # Email address used for ACME registration
-    email: noboru.kudoh@gmail.com
-    # Name of a secret used to store the ACME account private key
+    # Let's Encryptに登録するアドレス
+    email: ''
+    # Let's Encryptへのアクセス用のクレデンシャル(Cert Managerが自動生成する)
     privateKeySecretRef:
       name: letsencrypt-staging
-    # Enable the HTTP-01 challenge provider
-    http01: 
-      serviceType: ClusterIP
+    # HTTP-01 challenge(証明書発行するためにはそのドメインを所有しているという証明が必要)
+    # https://letsencrypt.org/docs/challenge-types/
+    # まずはCert ManagerがLet's EncryptのValidation要求に応えてくれる
+    solver:
+      http01: 
+       ingressName: ingress
