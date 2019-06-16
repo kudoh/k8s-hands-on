@@ -104,11 +104,12 @@ EOF
   kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/local-cluster/kube-flannel.yml
   
   # Control PlaneをDaemonSetとして実行する(SelfHosting)
-  # これをやらないとAPI Server からCoreDNSにアクセスできずAdmission Hookの名前解決ができなかった
-  # kubeadmのStatic Podだと/etc/resolv.confがOSと同じになる(OS側のネットワーク調整をしれば解決できそうな気もするがこれが簡単なので)
+  # これをやらないとAPI Server からCoreDNSにアクセスできずAdmission WebHookが機能しなかった
+  # kubeadmはデフォルトでStatic PodとしてControl Planeを起動していて、これだとPod内の/etc/resolv.confがOS側と同じになる
+  # OS側のネットワーク調整をしればこれをやらなくても解決できそうな気もするが...（超ハマった）
   kubeadm alpha self-hosting pivot -f
     
-  # Cntrol Plane -> Service Net(10.96.0.0/12)への経路を追加
+  # Control Plane -> Service Net(10.96.0.0/12)への経路を追加
   ip route add 10.96.0.0/12 via 10.244.0.1 dev cni0
 
   # kubeadm join スクリプト作成
