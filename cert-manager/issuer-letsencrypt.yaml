@@ -4,16 +4,16 @@ metadata:
   name: letsencrypt-staging
 spec:
   acme:
-    # Let's Encryptの証明書発行URL(ステージング環境用なのでTrustedではない)
+    # Let's Encryptの証明書発行URL(練習用なのでTrustedではない)
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    # Let's Encryptに登録するアドレス
+    # こっちが本番向け(Trustedな証明書)
+    #server: https://acme-v02.api.letsencrypt.org/directory
+    # Let's Encryptに登録するアドレス(環境変数で置換してね)
     email: ''
     # Let's Encryptへのアクセス用のクレデンシャル(Cert Managerが自動生成する)
     privateKeySecretRef:
-      name: letsencrypt-staging
+      name: acme-client-letsencrypt-staging
     # HTTP-01 challenge(証明書発行するためにはそのドメインを所有しているという証明が必要)
     # https://letsencrypt.org/docs/challenge-types/
-    # まずはCert ManagerがLet's EncryptのValidation要求に応えてくれる
-    solver:
-      http01: 
-       ingressName: ingress
+    # Cert ManagerがLet's EncryptのValidation要求に応えてくれる
+    http01: {}
