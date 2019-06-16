@@ -19,6 +19,8 @@ configurations {
     }
 }
 
+bootJar.archiveName = "${project.name}.jar"
+
 repositories {
     mavenCentral()
 }

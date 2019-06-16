@@ -1,0 +1,9 @@
+ k8s_yaml(./k8s"))
+ 
+ docker_build("github-service", ".", dockerfile="./github-service/Dockerfile")
+ docker_build("api-gatway", ".", dockerfile="./api-gateway/Dockerfile")
+ docker_build("repo-search-ui", ".", dockerfile="./repo-search-ui/Dockerfile")
+ 
+ # watch k8s deployment
+ #k8s_resource("local-contract-db", port_forwards=["9020:8080", "5432:5432"])
+ #k8s_resource("local-contract-service", port_forwards="8080:8080")
