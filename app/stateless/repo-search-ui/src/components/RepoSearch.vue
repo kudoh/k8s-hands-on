@@ -51,6 +51,8 @@
 <script>
 import axios from 'axios'
 
+const BASE_URL = __API_URL__
+
 export default {
   name: 'RepoSearch',
   props: {
@@ -67,7 +69,7 @@ export default {
   },
   methods: {
     search() {
-      axios.get(`http://localhost:3000/api/v1/repos?query=${this.searchWord}`)
+      axios.get(`${BASE_URL}?query=${this.searchWord}`)
         .then(res => {
           this.repos = res.data
         })

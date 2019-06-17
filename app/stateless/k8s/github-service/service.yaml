@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: github-service
+  labels:
+    app: github-service
+spec:
+  type: ClusterIP
+  selector:
+    app: github-service
+  ports:
+  - name: http
+    protocol: TCP
+    targetPort: http
+    port: 80

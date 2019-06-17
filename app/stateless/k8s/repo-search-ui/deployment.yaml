@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repo-search-ui
+  labels:
+    app: repo-search-ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: repo-search-ui
+  template:
+    metadata:
+      labels:
+        app: repo-search-ui
+    spec:
+      containers:
+      - name: repo-search-ui
+        image: kudohn/repo-search-ui:latest
+        imagePullPolicy: Always
+        # Nginxは8080 Portを公開している
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+        # カスタムのNginx configをConfigMapからVolumeとしてMount
+        volumeMounts:
+          - name: nginx-volume
+            mountPath: /etc/nginx/conf.d
+            readOnly: true
+        # nginxのconfigに設定したHealthチェックのパス
+        livenessProbe:
+          initialDelaySeconds: 3
+          timeoutSeconds: 3
+          httpGet:
+            path: /health
+            port: 80
+        readinessProbe:
+          initialDelaySeconds: 3
+          timeoutSeconds: 3
+          httpGet:
+            path: /health
+            port: 80
+        # リソースは最低限(Burstable)
+        resources: 
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+      # ConfigMap Volume
+      volumes:
+      - name: nginx-volume
+        configMap: 
+          name: nginx-config

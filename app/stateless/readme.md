@@ -2,11 +2,11 @@
 
 ```bash
 # Secret
-GITHUB_USER=$(echo github-userid | base64)
-GITHUB_PASSWORD=$(echo github-password | base64)
-cat k8s/github-secret.yaml | \
+GITHUB_USER=$(echo -n "github-userid" | base64)
+GITHUB_PASSWORD=$(echo -n "github-password" | base64)
+cat k8s/github-service/secret.yaml | \
    sed -e "s/user: ''/user: $GITHUB_USER/g" | \
-   sed -e "s/password: ''/password: $GITHUB_USER/g" | \
+   sed -e "s/password: ''/password: $GITHUB_PASSWORD/g" | \
    kubectl apply -f-
 
 # Service
