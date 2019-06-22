@@ -15,4 +15,8 @@ app.use(cors());
 
 app.use('/api/v1', gatewayRouter);
 
+app.use('/health', (req, res) => {
+  res.status(200).send();
+});
+
 module.exports = app;
