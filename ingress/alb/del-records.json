@@ -1,0 +1,30 @@
+{
+    "Comment": "", 
+    "Changes": [
+        {
+            "Action": "DELETE", 
+            "ResourceRecordSet": {
+                "AliasTarget": {
+                    "HostedZoneId": "Z14GRHDCWA56QT", 
+                    "EvaluateTargetHealth": true, 
+                    "DNSName": "0b2a8fbb-default-ingress-e8c7-565340723.ap-northeast-1.elb.amazonaws.com."
+                }, 
+                "Type": "A", 
+                "Name": "eks.frieza.dev."
+            }
+        },
+        {
+            "Action": "DELETE", 
+            "ResourceRecordSet": {
+                "ResourceRecords": [
+                    {
+                        "Value": "\"heritage=external-dns,external-dns/owner=default,external-dns/resource=ingress/default/ingress\""
+                    }
+                ], 
+                "Type": "TXT", 
+                "Name": "eks.frieza.dev.", 
+                "TTL": 300
+            }
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata: 
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: 'alb'
+    # トラフィックを振り向けるVPCのPublicサブネット（SubnetにTagをつけて自動検出させることもできる）
+    alb.ingress.kubernetes.io/subnets: ''
+    # ALBのスキーマ設定(PublicELB)
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # ALBからアプリへのヘルスチェックパス
+    alb.ingress.kubernetes.io/healthcheck-path: /
+spec:
+  rules:
+  - host: eks.frieza.dev
+    http:
+      paths:
+      - path: /app1
+        backend: 
+          serviceName: app1
+          servicePort: 3000
+      - path: /app2
+        backend: 
+          serviceName: app2
+          servicePort: 3000
