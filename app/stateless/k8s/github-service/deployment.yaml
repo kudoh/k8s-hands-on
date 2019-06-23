@@ -26,9 +26,9 @@ spec:
       containers:
       - name: github-service
         # コンテナイメージのリポジトリ＋Tag
-        image: kudohn/github-service
-        #imagePullPolicy: IfNotPresent
-        imagePullPolicy: Always
+        image: kudohn/github-service:v1
+        imagePullPolicy: IfNotPresent
+        #imagePullPolicy: Always
         # コンテナが公開するPort情報(httpという名前のNamed Port)
         ports:
         - name: http

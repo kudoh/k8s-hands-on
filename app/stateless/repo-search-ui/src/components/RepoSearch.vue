@@ -32,7 +32,7 @@
               <td class="text-left">{{ repo.language }}</td>
               <td class="text-left">{{ repo.description | truncate(40)}}</td>
               <td class="text-left"><span v-if="repo.license != 'Unknown'">{{ repo.license }}</span></td>
-              <td class="text-left"><p>{{ repo.owner }}</p><img :src="repo.avatar_url" class="avatar"></img></td>
+              <td class="text-left"><p>{{ repo.owner }}</p><img :src="repo.avatar_url" class="avatar" /></td>
               <td>{{ repo.watchers_count}}</td>
               <td>{{ repo.open_issues_count }}</td>
             </tr>  
@@ -80,13 +80,13 @@ export default {
       return parseInt(index) + 1;
     }
   },
-  filters: {
-    truncate(value, n) {
+  filters: {
+    truncate(value, n) {
       if (!value) return ''
-      if (value.length <= n + 1) return value
-      return value.substring(0, n + 1) + '...'
-    }
-  }
+      if (value.length <= n + 1) return value
+      return value.substring(0, n + 1) + '...'
+    }
+  }
 }
 </script>
 
