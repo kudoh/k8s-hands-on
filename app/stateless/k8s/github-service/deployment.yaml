@@ -11,7 +11,7 @@ spec:
   selector:
     matchLabels:
       app: github-service
-  # デプロイ戦略. RollingUpdateを指定(未指定でもいい)
+  # デプロイ戦略. RollingUpdateを指定(デフォルトなので未指定でもいい)
   # RollingUpdateは順次アップデートするのでダウンタイムなし(一時的に複数バージョンが混在)。
   # 他にRecreateも指定できる。Recreateは現バージョンを削除してから新バージョンをデプロイする(ダウンタイムは発生するがバージョンが混在することはない)
   strategy: 
@@ -26,7 +26,7 @@ spec:
       containers:
       - name: github-service
         # コンテナイメージのリポジトリ＋Tag
-        image: kudohn/github-service:latest
+        image: kudohn/github-service
         #imagePullPolicy: IfNotPresent
         imagePullPolicy: Always
         # コンテナが公開するPort情報(httpという名前のNamed Port)
@@ -68,6 +68,9 @@ spec:
               secretKeyRef:
                 name: github-secret
                 key: password
+          # service externalnameのクラスタドメイン
+          - name: GITHUB_API_HOST
+            value: github-api
         # アプリが要求するリソース(CPU，メモリ)。PodのQoSに影響する
         # ステージングや商用環境では必ず指定すること。
         # Requests,LimitsでCPU,メモリを同じ値にするとGuaranteedとなり最もPriorityが高くなる
@@ -75,9 +78,9 @@ spec:
           # リソース要求。Workerでこれを満たすリソースがない場合はPodはデプロイされずにPending状態になる
           requests:
             memory: 1Gi
-            cpu: 500m
+            cpu: 200m
           # リソース上限。
           limits:
             # MemoryはPodがこれを超えて消費すると殺される(OOMKiller)。Javaだと-Xms,-XmxのJVMパラメータを考慮する必要がある
             memory: 1Gi
-            cpu: 500m
+            cpu: 200m

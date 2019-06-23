@@ -7,12 +7,7 @@
     </div>
     <div class="row">
       <div class="col">
-        <div class="input-group mb-3">
-          <input v-model.lazy="searchWord" type="text" class="form-control" placeholder="検索ワードを入力してください。" aria-label="検索ワード">
-          <div class="input-group-append">
-            <button @click="search" class="btn btn-outline-secondary" type="button" id="button-search">Search</button>
-          </div>
-        </div>
+        <input v-model="searchWord" @keyup="search" type="text" class="form-control" placeholder="3文字以上で検索ワードを入力してください。" aria-label="検索ワード">
       </div>
     </div>
     <div class="row">
@@ -31,13 +26,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(repo, index) of repos" :key="index">
-              <th scope="row">{{ index + 1 }}</th>
+            <tr v-for="(repo, index) in repos" :key="index">
+              <th scope="row">{{ toRowIndex(index) }}</th>
               <td class="text-left"><a target="_blank" rel="noopener noreferrer" :href="repo.html_url">{{ repo.full_name }}</a></td>
               <td class="text-left">{{ repo.language }}</td>
-              <td class="text-left">{{ repo.description | truncate(20)}}</td>
+              <td class="text-left">{{ repo.description | truncate(40)}}</td>
               <td class="text-left"><span v-if="repo.license != 'Unknown'">{{ repo.license }}</span></td>
-              <td class="text-left">{{ repo.owner }}</td>
+              <td class="text-left"><p>{{ repo.owner }}</p><img :src="repo.avatar_url" class="avatar"></img></td>
               <td>{{ repo.watchers_count}}</td>
               <td>{{ repo.open_issues_count }}</td>
             </tr>  
@@ -69,6 +64,10 @@ export default {
   },
   methods: {
     search() {
+      if (this.searchWord.length < 3) {
+        this.repos = []
+        return
+      }
       axios.get(`${BASE_URL}?query=${this.searchWord}`)
         .then(res => {
           this.repos = res.data
@@ -76,11 +75,14 @@ export default {
         .catch(e => {
           console.error(e)
         })
-
+    },
+    toRowIndex(index) {
+      return parseInt(index) + 1;
     }
   },
   filters: {
     truncate(value, n) {
+      if (!value) return ''
       if (value.length <= n + 1) return value
       return value.substring(0, n + 1) + '...'
     }
@@ -89,4 +91,8 @@ export default {
 </script>
 
 <style scoped>
+.avatar {
+  width: 50px;
+  height: 50px;
+}
 </style>

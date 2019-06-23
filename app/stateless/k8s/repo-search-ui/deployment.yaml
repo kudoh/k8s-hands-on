@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: repo-search-ui
-        image: kudohn/repo-search-ui:latest
+        image: kudohn/repo-search-ui
         imagePullPolicy: Always
         # Nginxは8080 Portを公開している
         ports:

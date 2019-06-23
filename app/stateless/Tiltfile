@@ -1,9 +1,15 @@
- k8s_yaml(./k8s"))
+#default_registry("docker.io/kudohn")
+docker_build("kudohn/github-service", "./github-service")
+docker_build("kudohn/api-gateway", "./api-gateway")
+docker_build("kudohn/repo-search-ui", "./repo-search-ui")
+
+k8s_yaml(["./k8s/github-service/service.yaml", "./k8s/github-service/deployment.yaml", "./k8s/github-service/github-api.yaml"])
+k8s_yaml(listdir("./k8s/api-gateway"))
+k8s_yaml(listdir("./k8s/repo-search-ui"))
+k8s_yaml("./k8s/ingress/ingress.yaml")
  
- docker_build("github-service", ".", dockerfile="./github-service/Dockerfile")
- docker_build("api-gatway", ".", dockerfile="./api-gateway/Dockerfile")
- docker_build("repo-search-ui", ".", dockerfile="./repo-search-ui/Dockerfile")
- 
- # watch k8s deployment
- #k8s_resource("local-contract-db", port_forwards=["9020:8080", "5432:5432"])
- #k8s_resource("local-contract-service", port_forwards="8080:8080")
+# watch k8s deployment
+k8s_resource("github-service", port_forwards="8080:8080")
+k8s_resource("api-gateway", port_forwards="3000:3000")
+k8s_resource("repo-search-ui", port_forwards="8000:80")
+#k8s_resource("redis", port_forwards="6379:6379")

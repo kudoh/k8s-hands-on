@@ -24,17 +24,13 @@ public class GithubHandler {
 
     private final ObjectMapper objectMapper ;
     private final GithubProps props;
-    private WebClient client;
+    private final WebClient client;
 
     public GithubHandler(ObjectMapper objectMapper, GithubProps props) {
         this.objectMapper = objectMapper;
         this.props = props;
-    }
-
-    @PostConstruct
-    public void init() {
         this.client = WebClient.builder()
-                .baseUrl(props.getApiUrl())
+                .baseUrl(props.getBaseUrl())
                 .build();
     }
 
@@ -42,7 +38,6 @@ public class GithubHandler {
 
         UriComponents uri = UriComponentsBuilder.fromPath(props.getRepoSearchPath())
                 .queryParam("q", request.queryParam("query").orElse(""))
-                .queryParam("sort", "stars")
                 .build();
 
         log.info("retrieving repositories from github for {}", uri.toUriString());

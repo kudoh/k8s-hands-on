@@ -6,7 +6,7 @@ WORKDIR ${BUILD_DIR}
 
 COPY . ${BUILD_DIR}
 
-RUN gradle clean build -x test
+RUN gradle assemble
 
 FROM adoptopenjdk/openjdk11:alpine-slim as prod
 

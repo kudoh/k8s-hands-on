@@ -24,7 +24,7 @@ spec:
       containers:
       - name: api-gateway
         # コンテナイメージのリポジトリ＋Tag
-        image: kudohn/api-gateway:latest
+        image: kudohn/api-gateway
         #imagePullPolicy: IfNotPresent
         imagePullPolicy: Always
         # コンテナが公開するPort情報(Node.jsのデフォルトPort)
@@ -61,6 +61,21 @@ spec:
               configMapKeyRef:
                 name: api-gateway-config
                 key: serviceURL
+          - name: REDIS_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-config
+                key: redisHost
+          - name: REDIS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-config
+                key: redisPort
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: redis-secret
+                key: password
         # Node.jsはリソース効率がいいのでこの程度で十分
         # QoSはBurstableでk8sが柔軟にスケジュールできるようにする
         resources: 
