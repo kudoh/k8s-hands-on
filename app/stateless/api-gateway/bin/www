@@ -88,3 +88,12 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+const gracefulShutdown = function() {
+  server.close(function () {
+      process.exit();
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown); // for kill
+process.on('SIGINT', gracefulShutdown); // for Ctrl+C
