@@ -1,5 +1,5 @@
 # github-service
 
 ```bash
-docker build -t github-service:latest .
+docker build -t github-service:v1 .
 ```

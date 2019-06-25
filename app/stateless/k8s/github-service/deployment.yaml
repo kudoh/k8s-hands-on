@@ -28,7 +28,7 @@ spec:
         # コンテナイメージのリポジトリ＋Tag
         image: kudohn/github-service:v1
         imagePullPolicy: IfNotPresent
-        #imagePullPolicy: Always
+        # imagePullPolicy: Always
         # コンテナが公開するPort情報(httpという名前のNamed Port)
         ports:
         - name: http
@@ -68,9 +68,6 @@ spec:
               secretKeyRef:
                 name: github-secret
                 key: password
-          # service externalnameのクラスタドメイン
-          - name: GITHUB_API_HOST
-            value: github-api
         # アプリが要求するリソース(CPU，メモリ)。PodのQoSに影響する
         # ステージングや商用環境では必ず指定すること。
         # Requests,LimitsでCPU,メモリを同じ値にするとGuaranteedとなり最もPriorityが高くなる
