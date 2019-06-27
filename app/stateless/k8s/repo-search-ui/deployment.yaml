@@ -19,7 +19,6 @@ spec:
         image: kudohn/repo-search-ui:v1
         imagePullPolicy: IfNotPresent
         #imagePullPolicy: Always
-        # Nginxは8080 Portを公開している
         ports:
           - name: http
             containerPort: 80
