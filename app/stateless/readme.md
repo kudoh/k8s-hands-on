@@ -13,6 +13,15 @@ kubectl apply -f k8s/github-service/service.yaml
 kubectl apply -f k8s/github-service/deployment.yaml
 ```
 
+## Redis
+
+```bash
+helm upgrade redis --install stable/redis --namespace redis \
+  --set master.persistence.enabled=false \
+  --set cluster.enabled=false \
+  --set password=frieza-redis-pass
+```
+
 ## api-gateway
 
 ```bash
@@ -24,21 +33,21 @@ kubectl apply -f k8s/api-gateway/deployment.yaml
 kubectl apply -f k8s/api-gateway/service.yaml
 ```
 
-## Redis
+## repo-search-ui
 
 ```bash
-helm upgrade redis --install stable/redis --namespace redis \
-  --set master.persistence.enabled=false \
-  --set cluster.enabled=false \
-  --set password=frieza-redis-pass
-
-REDIS_PASSWORD=$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)
+kubectl apply -f k8s/repo-search-ui/configmap.yaml
+kubectl apply -f k8s/repo-search-ui/deployment.yaml
+kubectl apply -f k8s/repo-search-ui/service.yaml
 
 ```
 
 # Ingress
 
 ```bash
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=frieza.local/O=Mamezou"
+kubectl create secret tls tls-secret --key tls.key --cert tls.crt
+
 kubectl apply -f k8s/ingress/ingress.yaml
 
 echo "172.16.20.11 github.frieza.local" | sudo tee -a /etc/hosts

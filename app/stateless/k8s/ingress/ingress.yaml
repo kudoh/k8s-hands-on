@@ -5,6 +5,11 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
+  # 自己署名の証明書のキーペアを含むSecretリソースを指定する
+  tls:
+  - hosts:
+    - frieza.local
+    secretName: tls-secret
   rules:
   # 公開ホスト名
   - host: github.frieza.local
