@@ -1,9 +1,0 @@
-github:
-  host: api.github.com
-  protocol: https
-  media-type: application/vnd.github.v3+json
-#  user: foo
-#  password: bar
-  repo-search-path: /search/repositories
-
-
