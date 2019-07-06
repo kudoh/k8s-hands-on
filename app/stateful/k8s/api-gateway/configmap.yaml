@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  labels:
+    app: api-gateway
+data:
+  # backend service
+  serviceURL: http://github-service.default.svc.cluster.local/github
+  # redis for cache
+  redisMaster: redis-master.redis
+  redisSlave: redis-slave.redis
+  redisPort: "6379"
+

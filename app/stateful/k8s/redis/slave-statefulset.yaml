@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-slave
+  namespace: redis
+  labels:
+    app: redis
+    role: slave
+spec:
+  # Slave Read-Replica数
+  replicas: 2
+  # デプロイ戦略
+  updateStrategy: 
+    type: RollingUpdate
+  # Headless Service(StatefulSetの要件)
+  serviceName: redis-headless
+  selector:
+    matchLabels:
+      app: redis
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: slave
+    spec:
+      containers:
+      - name: redis
+        # Redisイメージ
+        image: redis:5.0.5
+        imagePullPolicy: IfNotPresent
+        # Redis起動設定
+        command: ["redis-server"]
+        args: ["/etc/redis/slave.conf", "--requirepass", "$(REDIS_PASSWORD)", "--masterauth", "$(REDIS_PASSWORD)"]
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: redis-secret
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        ports:
+          - name: redis
+            containerPort: 6379
+        volumeMounts:
+        # Dataの永続Volume(StatefulSetにより専用ストレージが割り当てられる)
+        - name: redis-data
+          mountPath: /data
+        # RedisのConfig
+        - name: conf
+          mountPath: /etc/redis
+      volumes:
+        - name: conf
+          configMap:
+            name: redis
+  # Pod別に割り当てられるPVCのテンプレート(OpenEBS)
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      storageClassName: openebs-sparse-sc
+      resources:
+        requests:
+          storage: 2Gi
+      accessModes:
+      - ReadWriteOnce
