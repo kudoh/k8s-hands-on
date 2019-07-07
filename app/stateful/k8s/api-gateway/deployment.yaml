@@ -24,9 +24,8 @@ spec:
       containers:
       - name: api-gateway
         # コンテナイメージのリポジトリ＋Tag
-        image: kudohn/api-gateway:v1-cluster
-        #imagePullPolicy: IfNotPresent
-        imagePullPolicy: Always
+        image: kudohn/api-gateway:v2
+        imagePullPolicy: IfNotPresent
         # コンテナが公開するPort情報(Node.jsのデフォルトPort)
         ports:
         - name: http
