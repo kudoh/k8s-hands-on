@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-db-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: github-db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: github-db
+  labels:
+    app: github-db  
+spec:
+  replicas: 1
+  serviceName: github-db-headless
+  selector:
+    matchLabels:
+      app: github-db
+  template:
+    metadata:
+      labels:
+        app: github-db
+    spec:
+      containers:
+        - name: github-db
+          image: postgres:11.4-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: jdbc
+              containerPort: 5432
+              protocol: TCP
+          resources: {}
+            
+          volumeMounts:
+          - name: github-db-pvc
+            mountPath: /var/lib/postgresql/data
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: github-db-secret
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: github-db-secret
+                key: password
+          - name: POSTGRES_DB
+            value: frieza
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+  volumeClaimTemplates:
+  - metadata:
+      name: github-db-pvc
+    spec:
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: openebs-sparse-sc

@@ -1,0 +1,25 @@
+FROM gradle:jdk11 as build
+
+ENV BUILD_DIR=/src
+RUN mkdir -p ${BUILD_DIR}
+WORKDIR ${BUILD_DIR}
+
+COPY . ${BUILD_DIR}
+
+RUN gradle assemble
+
+FROM adoptopenjdk/openjdk11:jdk-11.0.3_7 as prod
+
+RUN apt-get update; apt-get install -y curl jq
+
+ENV APP_DIR=/usr/local/app
+RUN mkdir -p ${APP_DIR}
+WORKDIR ${APP_DIR}
+
+COPY --from=build /src/build/libs/batch-app.jar ${APP_DIR}/
+COPY ./run.sh ${APP_DIR}/run.sh
+RUN chmod +x ${APP_DIR}/run.sh
+
+EXPOSE 8080
+
+ENTRYPOINT [ "./run.sh"]

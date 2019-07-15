@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-db
+  labels:
+    app: github-db
+spec:
+  type: ClusterIP
+  selector:
+    app: github-db
+  ports:
+  - name: jdbc
+    port: 5432
+    targetPort: jdbc

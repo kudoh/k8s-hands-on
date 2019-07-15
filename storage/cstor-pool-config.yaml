@@ -3,7 +3,7 @@ kind: StoragePoolClaim
 metadata:
   name: cstor-pool
   annotations:
-    # stor Podが利用するメモリ(ちょっと少なめに。。)
+    # cstor Podが利用するメモリ
     cas.openebs.io/config: |
       - name: PoolResourceRequests
         value: |-

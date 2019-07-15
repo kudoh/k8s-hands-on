@@ -1,0 +1,56 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-batch-app
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Replace
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      completions: 1
+      parallelism: 1
+      backoffLimit: 3
+      template:
+        metadata:
+          name: batch-app
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: batch-app
+            image: kudohn/cron-batch-app:v1
+            imagePullPolicy: IfNotPresent
+            env:
+            # for run.sh to access github api  
+            - name: GITHUB_API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: github-api-secret
+                  key: github-api-user
+            - name: GITHUB_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: github-api-secret
+                  key: github-api-password
+            # Override application.yml
+            - name: FILE_MOUNTPATH
+              value: /app/data
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://github-db.default.svc.cluster.local:5432/frieza
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: github-db-secret
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: github-db-secret
+                  key: password
+            volumeMounts:
+              - name: nfs-volume
+                mountPath: /app/data
+          volumes:
+            - name: nfs-volume
+              persistentVolumeClaim:
+                claimName: nfs-pvc

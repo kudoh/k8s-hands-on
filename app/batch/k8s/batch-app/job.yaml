@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batch-app
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 3
+  template:
+    metadata:
+      name: batch-app
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: batch-app
+        image: kudohn/batch-app:v1
+        imagePullPolicy: IfNotPresent
+        args:
+          - file.name=''
+        env:
+        # Override application.yml
+        - name: FILE_MOUNTPATH
+          value: /app/data
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://github-db.default.svc.cluster.local:5432/frieza
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: github-db-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: github-db-secret
+              key: password
+        volumeMounts:
+          - name: nfs-volume
+            mountPath: /app/data
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-pvc
