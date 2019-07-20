@@ -1,0 +1,170 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+k8s_version = "1.14"
+
+Vagrant.configure("2") do |config|
+
+  $common_setup_script = <<-SCRIPT
+
+  # SWAP無効化(kubelet要件)
+  swapoff -a
+  sed -i '/ swap / s/^\\(.*\\)$/#\\1/g' /etc/fstab
+  
+  # SELinux無効化(kubelet要件)
+  setenforce 0
+  sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+  # yumパッケージ最新化
+  yum update -y
+
+  # yumリポジトリにkubernetesリポジトリを追加
+  cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kube*
+EOF
+
+  VERSION=$(yum list kubeadm --showduplicates --disableexcludes=kubernetes | sort -r | grep #{k8s_version} | head -1 | awk '{print $2}')
+  yum install -y kubeadm-$VERSION kubelet-$VERSION kubectl-$VERSION --disableexcludes=kubernetes
+  systemctl enable kubelet && systemctl start kubelet
+
+  # Containerd
+  # https://kubernetes.io/docs/setup/cri/#containerd
+  modprobe overlay
+  modprobe br_netfilter
+  
+  # Setup required sysctl params, these persist across reboots.
+  cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+  # Install containerd
+  ## Set up the repository
+  ### Install required packages
+  yum install yum-utils device-mapper-persistent-data lvm2 -y
+  
+  ### Add docker repository
+  yum-config-manager \
+      --add-repo \
+      https://download.docker.com/linux/centos/docker-ce.repo
+  
+  ## Install containerd
+  yum install containerd.io -y
+  
+  # Configure containerd
+  mkdir -p /etc/containerd
+  containerd config default > /etc/containerd/config.toml
+  
+  # Restart containerd
+  systemctl restart containerd
+  
+  # Network Pluginの要件  
+  # https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#network-plugin-requirements
+  sysctl net.bridge.bridge-nf-call-iptables=1
+  sysctl net.bridge.bridge-nf-call-ip6tables=1
+
+  sysctl --system
+
+  IPADDR=$(ip a show eth1 | grep inet | grep -v inet6 | awk '{print $2}' | cut -f1 -d/)
+  # bind private ip to kubelet
+  sed -i "/KUBELET_EXTRA_ARGS=/c\KUBELET_EXTRA_ARGS=--node-ip=$IPADDR" /etc/sysconfig/kubelet
+  # restart kubelet
+  systemctl daemon-reload
+  systemctl restart kubelet
+  
+  # Install iSCSI for OpenEBS
+  yum install iscsi-initiator-utils -y
+  systemctl enable iscsid && sudo systemctl start iscsid
+
+  SCRIPT
+
+  $master_node_script = <<-SCRIPT
+
+  IPADDR=$(ip a show eth1 | grep inet | grep -v inet6 | awk '{print $2}' | cut -f1 -d/)
+  HOSTNAME=$(hostname -s)
+  K8S_VERSION=$(kubelet --version | cut -f2 -d ' ')
+  # Control Plane初期化(continerd)
+  # 使用するCRI/CNIによってパラメータ調整が必要. FlannelはPod CIDRが`10.244.0.0/16`である必要がある
+  kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-sans=$IPADDR --kubernetes-version=$K8S_VERSION \
+    --node-name $HOSTNAME --pod-network-cidr=10.244.0.0/16 --cri-socket=/run/containerd/containerd.sock
+
+  # CNI-flannel
+  # https://github.com/coreos/flannel
+  # https://github.com/coreos/flannel/blob/master/Documentation/troubleshooting.md#vagrant
+  # https://medium.com/@anilkreddyr/kubernetes-with-flannel-understanding-the-networking-part-1-7e1fe51820e4
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+  kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/local-cluster/kube-flannel.yml
+  
+  # Control PlaneをDaemonSetとして実行する(SelfHosting)
+  # これをやらないとAPI Server からCoreDNSにアクセスできずAdmission WebHookが機能しなかった
+  # kubeadmはデフォルトでStatic PodとしてControl Planeを起動していて、これだとPod内の/etc/resolv.confがOS側と同じになる
+  # OS側のネットワーク調整をしればこれをやらなくても解決できそうな気もするが...（超ハマった）
+  kubeadm alpha self-hosting pivot -f
+    
+  # Control Plane -> Service Net(10.96.0.0/12)への経路を追加
+  ip route add 10.96.0.0/12 via 10.244.0.1 dev cni0
+
+  # kubeadm join スクリプト作成
+  mkdir -p /home/vagrant/shared
+  kubeadm token create --print-join-command > /home/vagrant/shared/kubeadm_join_cmd.sh
+  chmod +x /home/vagrant/shared/kubeadm_join_cmd.sh
+  
+  # ホストOS向けkubectlアカウント作成
+  kubectl create serviceaccount tester
+  SECRET_NAME=$(kubectl get serviceaccount tester -o jsonpath='{.secrets[0].name}')
+  kubectl create clusterrolebinding --clusterrole=cluster-admin --serviceaccount=default:tester tester-admin
+  kubectl get secret $SECRET_NAME -o jsonpath='{.data.token}' | base64 --decode > /home/vagrant/shared/token
+  kubectl get secret $SECRET_NAME -o jsonpath='{.data.ca\\.crt}' | base64 --decode > /home/vagrant/shared/k8s-ca.crt
+
+  SCRIPT
+
+  $worker_node_script = <<-SCRIPT
+
+  echo "woker node settings..."
+
+  sh /home/vagrant/shared/kubeadm_join_cmd.sh
+
+  SCRIPT
+  
+  config.vm.provision "shell", inline: $common_setup_script
+  
+  # Master Node  
+  (1..1).each do |i|
+    config.vm.define "k8s-master#{i}" do |master|
+      master.vm.box = "centos/7"
+      master.vm.hostname = "k8s-master#{i}"
+      master.vm.synced_folder "shared/", "/home/vagrant/shared", type: "virtualbox", create: true, group: "vagrant", owner: "vagrant"
+      master.vm.network "private_network", ip: "172.16.10.#{i + 10}"
+      master.vm.provider "virtualbox" do |vb|
+        vb.memory = 2048
+        vb.cpus = 2
+      end
+      # 全部手動でやる場合は以下をコメントアウト
+      master.vm.provision "shell", inline: $master_node_script
+    end
+  end
+
+  # Worker Node  
+  (1..2).each do |i|
+    config.vm.define "k8s-worker#{i}" do |worker|
+      worker.vm.box = "centos/7"
+      worker.vm.hostname = "k8s-worker#{i}"
+      worker.vm.synced_folder "shared/", "/home/vagrant/shared", type: "virtualbox", create: true, group: "vagrant", owner: "vagrant"
+      worker.vm.network "private_network", ip: "172.16.20.#{i + 10}"
+      worker.vm.provider "virtualbox" do |vb|
+        vb.memory = 8192
+        vb.cpus = 3
+      end
+      # 全部手動でやる場合は以下をコメントアウト
+      worker.vm.provision "shell", inline: $worker_node_script
+    end
+  end
+end

@@ -1,10 +1,11 @@
 #!/bin/bash
 
 MASTER_IP=172.16.10.11
+SHARED_DIR=${1:-./local-cluster/high-spec/shared}
  
  # kubeconfigのセットアップ。APIサーバのdefaultは6443ポートが開いている。マルチMasterの場合はLBを指定
-kubectl config set-cluster local-k8s --server=https://${MASTER_IP}:6443 --certificate-authority=./local-cluster/shared/k8s-ca.crt
-kubectl config set-credentials tester --token=$(cat ./local-cluster/shared/token)
+kubectl config set-cluster local-k8s --server=https://${MASTER_IP}:6443 --certificate-authority=${SHARED_DIR}/k8s-ca.crt
+kubectl config set-credentials tester --token=$(cat ${SHARED_DIR}/token)
 kubectl config set-context local-k8s-tester --cluster=local-k8s --user=tester --namespace default
   
 kubectl config use-context local-k8s-tester
@@ -54,7 +55,7 @@ if [[ $rc != 0 ]] ;then
   exit 1
 fi
 
-sleep 30
+sleep 60
 
 kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/cstor-pool-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/storageclass.yaml
