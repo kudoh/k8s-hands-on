@@ -1,0 +1,51 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app: api-gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: api-gateway    
+      annotations:  
+        # トラフィックがないときは起動しない
+        autoscaling.knative.dev/minScale: "0"
+        # 5台までオートスケール
+        autoscaling.knative.dev/maxScale: "5"
+    spec:
+      containers:
+      - image: kudohn/api-gateway:v1
+        livenessProbe:
+          httpGet:
+            path: /health
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+        env:
+        - name: SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: api-gateway-config
+              key: serviceURL
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: api-gateway-config
+              key: redisHost
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: api-gateway-config
+              key: redisPort
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password

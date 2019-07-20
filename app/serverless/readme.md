@@ -54,19 +54,68 @@ kubectl apply -f istio-lean.yaml
 ```bash
 kubectl apply --selector knative.dev/crd-install=true \
   -f https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml \
-  -f https://github.com/knative/build/releases/download/v0.7.0/build.yaml \
   -f https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml \
   -f https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml
 
-kubectl apply -f https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --selector networking.knative.dev/certificate-provider!=cert-manager \
-  -f https://github.com/knative/build/releases/download/v0.7.0/build.yaml \
+kubectl apply -f https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml \
+  --selector networking.knative.dev/certificate-provider!=cert-manager \
   -f https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml \
   -f https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml
 
 kubectl get pods --namespace knative-serving
-kubectl get pods --namespace knative-build
 kubectl get pods --namespace knative-eventing
 kubectl get pods --namespace knative-monitoring
 ```
 
-## application
+## Redis
+
+```bash
+helm upgrade redis --install stable/redis --namespace redis \
+   --set master.persistence.enabled=false \
+   --set cluster.enabled=false \
+   --set password=frieza-redis-pass
+```
+
+## github-service
+
+``` bash
+kubectl create secret generic github-secret --from-literal=user=<your-user-id> --from-literal=password=<your-password>
+kubectl apply \
+  -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/k8s/github-service/deployment.yaml \
+  -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/k8s/github-service/service.yaml
+```
+
+## api-gateway
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/k8s/api-gateway/configmap.yaml
+kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/k8s/api-gateway/secret.yaml
+
+# Knative Service
+kubectl apply -f k8s/config-domain.yaml
+kubectl apply -f k8s/api-gateway/service.yaml
+
+PUBLIC_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[*].ip}')
+echo "${PUBLIC_IP} api-gateway.default.frieza.dev" | sudo tee -a /etc/hosts
+curl http://api-gateway.default.frieza.dev/api/v1/repos?query=frieza
+
+
+kubectl apply -f -f k8s/api-gateway/service-scale.yaml
+
+```
+
+## clean up
+
+```bash
+kubectl delete -f https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml \
+  --selector networking.knative.dev/certificate-provider!=cert-manager \
+  -f https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml \
+  -f https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml
+
+kubectl delete --selector knative.dev/crd-install=true \
+  -f https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml \
+  -f https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml \
+  -f https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml
+
+kubectl delete -f istio-lean.yaml
+```

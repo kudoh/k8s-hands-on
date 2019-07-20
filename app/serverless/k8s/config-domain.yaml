@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-domain
+  namespace: knative-serving
+data:
+  frieza.dev: |
+    selector:
+      app: api-gateway
+
+  example.com: ""
