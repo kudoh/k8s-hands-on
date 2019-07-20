@@ -60,6 +60,6 @@ kubectl delete job batch-app
 ```bash
 docker build -t kudohn/cron-batch-app:v1 -f ./batch-app/Dockerfile.cron ./batch-app && docker push kudohn/cron-batch-app:v1
 
-kubectl create secret generic github-api-secret --from-literal github-api-user=kudoh --from-literal=github-api-password=mildseven0905
+kubectl create secret generic github-api-secret --from-literal github-api-user=<your-user-id> --from-literal=github-api-password=<your-password>
 kubectl apply -f k8s/batch-app/cronjob.yaml
 ```
