@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: github-ingress
+  labels:
+    app.kubernetes.io/part-of: k8s-hands-on
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  # 公開ホスト名
+  - host: dev.github.frieza.local
+    http:
+      # パスベースルーティング
+      paths:
+      # API Gateway
+      - path: /api/v1
+        backend:
+          serviceName: api-gateway
+          servicePort: 80
+      # Vue.js
+      - path: /
+        backend:
+          serviceName: repo-search-ui
+          servicePort: 80

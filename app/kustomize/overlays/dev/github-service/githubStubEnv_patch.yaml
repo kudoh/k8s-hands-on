@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: github-service
+        env:
+        - name: GITHUB_HOST
+          value: dev-github-stub.default.svc.cluster.local
+        - name: GITHUB_PROTOCOL
+          value: http
+          
+

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repo-search-ui
+  labels:
+    app: repo-search-ui
+spec:
+  selector:
+    matchLabels:
+      app: repo-search-ui
+  template:
+    metadata:
+      labels:
+        app: repo-search-ui
+    spec:
+      containers:
+      - name: repo-search-ui
+        # Kustomizeで上書きされる
+        image: repo-search-ui
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+        # カスタムのNginx configをConfigMapからVolumeとしてMount
+        volumeMounts:
+          - name: nginx-volume
+            mountPath: /etc/nginx/conf.d
+            readOnly: true
+        # nginxのconfigに設定したHealthチェックのパス
+        livenessProbe:
+          initialDelaySeconds: 3
+          timeoutSeconds: 3
+          httpGet:
+            path: /health
+            port: 80
+        readinessProbe:
+          initialDelaySeconds: 3
+          timeoutSeconds: 3
+          httpGet:
+            path: /health
+            port: 80
+        resources: {}
+      # ConfigMap Volume
+      volumes:
+      - name: nginx-volume
+        configMap: 
+          name: nginx-config

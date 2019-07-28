@@ -1,0 +1,75 @@
+{
+    "total_count": 2,
+    "incomplete_results": false,
+    "items": [
+      {
+        "id": 1,
+        "node_id": "MDEwOlJlcG9zaXRvcnkzMDgxMjg2",
+        "name": "Stub Repo1",
+        "full_name": "repo1",
+        "owner": {
+          "login": "mamezou/dodoria",
+          "id": 1,
+          "node_id": "MDQ6VXNlcjg3MjE0Nw==",
+          "avatar_url": "https://i.gyazo.com/2d06e5902587ca25499bb488bb32edb8.jpg",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dtrupenn",
+          "received_events_url": "https://api.github.com/users/dtrupenn/received_events",
+          "type": "User"
+        },
+        "private": false,
+        "html_url": "https://github.com/wiremock/stub1",
+        "description": "当たり前だ…たった３匹のアリが恐竜に勝てると思ったのか？",
+        "fork": false,
+        "url": "https://github.com/wiremock/stub1",
+        "created_at": "2012-01-01T00:31:50Z",
+        "updated_at": "2013-01-05T17:58:47Z",
+        "pushed_at": "2012-01-01T00:37:02Z",
+        "homepage": "",
+        "size": 524,
+        "stargazers_count": 1,
+        "watchers_count": 1,
+        "language": "Go",
+        "forks_count": 0,
+        "open_issues_count": 0,
+        "master_branch": "master",
+        "default_branch": "master",
+        "score": 10.309712
+      },
+      {
+        "id": 2,
+        "node_id": "MDEwOlJlcG9zaXRvcnkzMDgxMjg2",
+        "name": "Stub Repo2",
+        "full_name": "repo2",
+        "owner": {
+          "login": "mamezou/frieza",
+          "id": 2,
+          "node_id": "MDQ6VXNlcjg3MjE0Nw==",
+          "avatar_url": "https://i.gyazo.com/e4888484d73469459877d101f918f290.jpg",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dtrupenn",
+          "received_events_url": "https://api.github.com/users/dtrupenn/received_events",
+          "type": "User"
+        },
+        "private": false,
+        "html_url": "https://github.com/wiremock/stub2",
+        "description": "追うんですよ、ドドリアさん！つかまえなさい！",
+        "fork": false,
+        "url": "https://github.com/wiremock/stub2",
+        "created_at": "2012-01-01T00:31:50Z",
+        "updated_at": "2013-01-05T17:58:47Z",
+        "pushed_at": "2012-01-01T00:37:02Z",
+        "homepage": "",
+        "size": 524,
+        "stargazers_count": 1,
+        "watchers_count": 1,
+        "language": "Java",
+        "forks_count": 0,
+        "open_issues_count": 0,
+        "master_branch": "master",
+        "default_branch": "master",
+        "score": 10.309712
+      }
+    ]
+}
+  

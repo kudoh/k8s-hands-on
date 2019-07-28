@@ -41,8 +41,12 @@ router.get('/repos', check('query').not().isEmpty(), checkValidationResult, asyn
   client.get(`/repos?query=${query}`)
     .then(async result => {
       console.log(`retrieved github data successfully. caching for next request.`)
-      await jsonCache.set(query, result.data, {expire: 60 * 60});
-      res.status(200).json(result.data);
+      if (result.data.length === 0) {
+        res.status(200).json([]);
+      } else {
+        await jsonCache.set(query, result.data, {expire: 60 * 60});
+        res.status(200).json(result.data);
+      }
     })
     .catch(e => {
       console.error(e);

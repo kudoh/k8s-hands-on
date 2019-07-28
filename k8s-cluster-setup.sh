@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MASTER_IP=172.16.10.11
-SHARED_DIR=${1:-./local-cluster/high-spec/shared}
+SHARED_DIR=${1:-./local-cluster/shared}
  
  # kubeconfigのセットアップ。APIサーバのdefaultは6443ポートが開いている。マルチMasterの場合はLBを指定
 kubectl config set-cluster local-k8s --server=https://${MASTER_IP}:6443 --certificate-authority=${SHARED_DIR}/k8s-ca.crt

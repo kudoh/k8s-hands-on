@@ -101,7 +101,7 @@ curl http://api-gateway.default.frieza.dev/api/v1/repos?query=frieza
 
 
 kubectl apply -f -f k8s/api-gateway/service-scale.yaml
-
+hey -c 50 -z 10s http://api-gateway.default.frieza.dev/api/v1/repos?query=frieza
 ```
 
 ## clean up

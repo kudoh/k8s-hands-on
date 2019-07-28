@@ -1,0 +1,18 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPath": "/search/repositories",
+        "queryParameters" : {
+            "q" : {
+              "doesNotMatch" : "^frieza(.*)$"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "bodyFileName": "empty_response.json"
+    }
+}

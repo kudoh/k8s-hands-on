@@ -1,0 +1,41 @@
+# Kustomize v2.1からはbasesはresourcesに統合(deprecatedになった)
+bases:
+- ../../base
+# 適用するリソース
+resources:
+- ingress/ingress.yaml
+- github-service/github-stub.yaml
+# baseリソースに対して適用するPatchファイル群
+patchesStrategicMerge:
+- api-gateway/localImagePullPolicy_patch.yaml
+- github-service/localImagePullPolicy_patch.yaml
+- github-service/githubStubEnv_patch.yaml
+- repo-search-ui/localImagePullPolicy_patch.yaml
+namePrefix: dev-
+# Secretリソース
+secretGenerator:
+- name: github-secret
+  files:
+  - user=.env/github-user
+  - password=.env/github-pass
+- name: redis-secret
+  files:
+  - password=.env/redis-pass
+# ConfigMapリソース
+configMapGenerator:
+- name: api-gateway-config
+  literals:
+  - serviceURL=http://dev-github-service.default.svc.cluster.local/github
+  - redisHost=redis-master.redis.svc.cluster.local
+  - redisPort=6379
+# コンテナイメージ
+images:
+- name: api-gateway
+  newName: api-gateway
+  newTag: dev.1
+- name: github-service
+  newName: github-service
+  newTag: dev.1
+- name: repo-search-ui
+  newName: repo-search-ui
+  newTag: dev.1

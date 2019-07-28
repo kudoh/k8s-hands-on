@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api-gateway
+  name: api-gateway
+spec:
+  # クラスタ構成の設定
+  selector:
+    matchLabels:
+      app: api-gateway
+  # デプロイ戦略. RollingUpdateを指定
+  strategy: 
+    type: RollingUpdate
+  # 生成するPodのテンプレート. これをもとにレプリカ数分生成される
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      # Pod内のコンテナ(api-gateway)に関する設定
+      containers:
+      - name: api-gateway
+        # Kustomizeで上書きされる
+        image: api-gateway
+        # コンテナが公開するPort情報(Node.jsのデフォルトPort)
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        # Readiness Probe. これに失敗するとServiceリソースの公開対象(Endpointリソース)から外れる
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+        # Liveness Probe. ReplicaSetのヘルスチェック. これに失敗するとPodは再起動される。
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          # Node.jsは起動が高速なので、5秒あれば十分
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+        # PodのライフサイクルHook
+        # 処理中のリクエストが終わるまで（Graceful Shutdown）5秒の猶予を設けている
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 5"]
+        # 環境変数
+        # Backendサービス(github-service)のURLをConfigMapより取得する
+        env:
+          - name: SERVICE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-config
+                key: serviceURL
+          - name: REDIS_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-config
+                key: redisHost
+          - name: REDIS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-config
+                key: redisPort
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: redis-secret
+                key: password
+        resources: {}

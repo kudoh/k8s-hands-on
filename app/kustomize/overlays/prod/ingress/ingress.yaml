@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: github-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  # 自己署名の証明書のキーペアを含むSecretリソースを指定する
+  tls:
+  - hosts:
+    - frieza.local
+    secretName: tls-secret
+  rules:
+  # 公開ホスト名
+  - host: github.frieza.local
+    http:
+      # パスベースルーティング
+      paths:
+      # API Gateway
+      - path: /api/v1
+        backend:
+          serviceName: api-gateway
+          servicePort: 80
+      # Vue.js
+      - path: /
+        backend:
+          serviceName: repo-search-ui
+          servicePort: 80

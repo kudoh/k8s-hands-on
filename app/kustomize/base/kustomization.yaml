@@ -1,0 +1,13 @@
+commonLabels:
+  app.kubernetes.io/version: v1
+  app.kubernetes.io/part-of: k8s-hands-on
+commonAnnotations:
+  owner: frieza
+resources:
+- api-gateway/service.yaml
+- api-gateway/deployment.yaml
+- github-service/service.yaml
+- github-service/deployment.yaml
+- repo-search-ui/configmap.yaml
+- repo-search-ui/service.yaml
+- repo-search-ui/deployment.yaml

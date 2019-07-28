@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: github-service
+  name: github-service
+spec:
+  # Deploymentによって作成されるReplicaSetのLabelSelector
+  selector:
+    matchLabels:
+      app: github-service
+  # デプロイ戦略. RollingUpdateを指定(デフォルトなので未指定でもいい)
+  # RollingUpdateは順次アップデートするのでダウンタイムなし(一時的に複数バージョンが混在)。
+  # 他にRecreateも指定できる。Recreateは現バージョンを削除してから新バージョンをデプロイする(ダウンタイムは発生するがバージョンが混在することはない)
+  strategy: 
+    type: RollingUpdate
+  # 生成するPodのテンプレート. これをもとにレプリカ数分生成される
+  template:
+    metadata:
+      labels:
+        app: github-service
+    spec:
+      # Pod内のコンテナ(github-service)に関する設定
+      containers:
+      - name: github-service
+        # Kustomizeで上書きされる
+        image: github-service
+        # コンテナが公開するPort情報(httpという名前のNamed Port)
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        # Readiness Probe. これに失敗するとServiceリソースの公開対象(Endpointリソース)から外れる
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        # Liveness Probe. ReplicaSetのヘルスチェック. これに失敗するとコンテナは再起動される。
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          # 起動に時間がかかるようなアプリはチェック開始のDelayを正しく設定しないと、起動完了前のコンテナの再起動が無限ループになるので注意
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        # PodのライフサイクルHook
+        # 処理中のリクエストが終わるまで（Graceful Shutdown）5秒の猶予を設けている
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 5"]
+        # 環境変数。Github WebAPIのBasic認証情報をSecretリソースを指定する
+        # Spring Bootの環境変数バインディングによりEnvironmentに反映される
+        env:
+          - name: GITHUB_USER
+            valueFrom:
+              secretKeyRef:
+                name: github-secret
+                key: user
+          - name: GITHUB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: github-secret
+                key: password
+        # アプリが要求するリソース(CPU，メモリ)。PodのQoSに影響する
+        # ステージングや商用環境では必ず指定すること。
+        # Requests,LimitsでCPU,メモリを同じ値にするとGuaranteedとなり最もPriorityが高くなる
+        resources: {}

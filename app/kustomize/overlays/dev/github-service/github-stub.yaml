@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-stub
+  labels:
+    app: github-stub
+spec:
+  type: ClusterIP
+  selector:
+    app: github-stub
+  ports:
+  - name: http
+    targetPort: http
+    port: 80
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: github-stub
+  labels:
+    app: gihtub-stub
+spec:
+  template:
+    metadata:
+      labels:
+        app: github-stub
+    spec:
+      containers:
+      - name: gihtub-stub
+        image: github-stub:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 10080 
+          name: http
+        resources: {}
