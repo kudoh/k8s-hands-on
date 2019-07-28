@@ -122,15 +122,14 @@ helm upgrade nginx-ingress --install stable/nginx-ingress \
    --set nodeSelector."beta.kubernetes.io/os"=linux
 kubectl get svc -l app=nginx-ingress
 
+# cert-manager
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.8.0/cert-manager.yaml --validate=false
+
 # credential
 echo -n "<your-github-userid>" > overlays/prod/.env/github-user
 echo -n "<your-github-password>" > overlays/prod/.env/github-pass
 REDIS_PASS=$(az redis list-keys --resource-group ${RG} --name ${REDIS} --query 'primaryKey' -o tsv)
 echo -n $REDIS_PASS > overlays/prod/.env/redis-pass
-
-# cert-manager
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.8.0/cert-manager.yaml --validate=false
-
 
 az group delete --name ${RG}
 ```

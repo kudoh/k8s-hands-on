@@ -16,11 +16,6 @@ patchesStrategicMerge:
 namePrefix: prod-
 # Secretリソース
 secretGenerator:
-# TLS
-- name: tls-secret
-  files:
-  - tls.key=.env/tls.key
-  - tls.crt=.env/tls.crt
 - name: github-secret
   files:
   - user=.env/github-user
