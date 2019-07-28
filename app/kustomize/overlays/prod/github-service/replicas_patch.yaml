@@ -1,6 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-gateway
+  name: github-service
 spec:
-  replicas: 1
+  replicas: 2

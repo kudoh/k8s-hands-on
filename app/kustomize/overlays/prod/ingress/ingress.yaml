@@ -1,18 +1,21 @@
-apiVersion: networking.k8s.io/v1beta1
+#apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: github-ingress
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    certmanager.k8s.io/issuer: "prod-letsencrypt"
+    certmanager.k8s.io/acme-challenge-type: http01
 spec:
   # 自己署名の証明書のキーペアを含むSecretリソースを指定する
   tls:
   - hosts:
-    - frieza.local
-    secretName: tls-secret
+    - cloud.github.frieza.dev
+    secretName: prod-letsencrypt
   rules:
   # 公開ホスト名
-  - host: github.frieza.local
+  - host: cloud.github.frieza.dev
     http:
       # パスベースルーティング
       paths:
