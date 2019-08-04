@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-rolebinding
+subjects:
+- kind: Group
+  name: mamezou-sre
+roleRef:
+  kind: ClusterRole
+  name: sre-role
+  apiGroup: rbac.authorization.k8s.io

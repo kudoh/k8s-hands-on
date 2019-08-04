@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-rolebinding
+  namespace: dev1
+subjects:
+- kind: User
+  name: dodoria
+  apiGroup: "rbac.authorization.k8s.io"
+roleRef:
+  kind: ClusterRole
+  name: developer-role
+  apiGroup: "rbac.authorization.k8s.io"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-rolebinding
+  namespace: dev2
+subjects:
+- kind: User
+  name: zarbon
+  apiGroup: "rbac.authorization.k8s.io"
+roleRef:
+  kind: ClusterRole
+  name: developer-role
+  apiGroup: "rbac.authorization.k8s.io"
