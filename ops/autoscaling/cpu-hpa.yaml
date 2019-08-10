@@ -1,0 +1,23 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mock-hpa
+  labels:
+    name: mock
+spec:
+  # レプリカ数の下限・上限
+  maxReplicas: 20
+  minReplicas: 3
+  # オートスケールのターゲットはDeployment
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: mock
+  # CPU使用率に基づくオートスケール
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
