@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: heavy
+  labels:
+    name: heavy
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        name: heavy
+    spec:
+      # GPUのtaintが存在するNodeにスケジューリングされることを許容  
+      tolerations:
+        - key: gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin
+        ports:
+        - containerPort: 80
+          name: http
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: normal
+  labels:
+    name: normal
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        name: normal
+    spec:
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin
+        ports:
+        - containerPort: 80
+          name: http

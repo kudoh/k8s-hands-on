@@ -31,5 +31,5 @@ kubectl get hpa,deploy -l name=mock
 ## Test
 
 ```bash
-hey -n 100 -c 10 http://mock.cluster.local/mock/delay/0.5
+hey -c 50 -z 60s --host mock.cluster.local  http://$PUBLIC_IP/mock/delay/0.5
 ```
