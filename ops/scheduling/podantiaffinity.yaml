@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frieza
+  labels:
+    name: frieza
+spec:
+   # PodAntiAffinityの効果を見るためfieza Podはレプリカ数を1とする
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: frieza
+    spec:
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: goku
+  labels:
+    name: goku
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        name: goku
+    spec:
+      # frieza Podと同一データセンターをMust要件にする
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: data-center
+            labelSelector:
+              matchLabels:
+                name: frieza
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin

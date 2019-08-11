@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frieza
+  labels:
+    name: frieza
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: frieza
+    spec:
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dodoria
+  labels:
+    name: dodoria
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        name: dodoria
+    spec:
+      # frieza Podと同一データセンターをMust要件にする
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: data-center
+            labelSelector:
+              matchLabels:
+                name: frieza
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zarbon
+  labels:
+    name: zarbon
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        name: zarbon
+    spec:
+      # frieza Podの近くに優先的にスケジューリングする
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: data-center
+              labelSelector:
+                matchLabels:
+                  name: frieza
+      containers:
+      - image: kennethreitz/httpbin
+        name: http-bin

@@ -11,6 +11,21 @@ spec:
       labels:
         name: heavy
     spec:
+      affinity:
+        nodeAffinity:
+          # GPUノードに優先的に配置するAffinity
+          # preferredDuringSchedulingIgnoredDuringExecution:
+          # - weight: 100
+          #   preference:
+          #     matchExpressions:
+          #     - key: gpu
+          #       operator: Exists
+          # GPUノードに配置するAffinity(Hard)
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: gpu
+                operator: Exists
       # GPUのtaintが存在するNodeにスケジューリングされることを許容  
       tolerations:
         - key: gpu
