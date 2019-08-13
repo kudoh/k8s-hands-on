@@ -25,6 +25,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '2.0.1'
 
+    // Prometheus PushGateway integration
+    implementation 'io.prometheus:simpleclient_pushgateway:0.6.0'
+
     runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.2.6'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

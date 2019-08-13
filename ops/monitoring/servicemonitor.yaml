@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: github-service-monitor
+  labels:
+    release: prometheus-operator
+spec:
+  jobLabel: github-service
+  podTargetLabels:
+  - app
+  selector:
+    matchLabels:  
+      app: github-service
+  namespaceSelector:
+    matchNames: [default]  
+  # Spring Boot ActuatorのPrometheusエンドポイント
+  endpoints:
+  - port: http
+    path: /actuator/prometheus
