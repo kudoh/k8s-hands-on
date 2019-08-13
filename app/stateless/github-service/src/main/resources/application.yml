@@ -6,4 +6,11 @@ github:
 #  password: bar
   repo-search-path: /search/repositories
 
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          # expose prometheus metrics endpoint
+          - prometheus

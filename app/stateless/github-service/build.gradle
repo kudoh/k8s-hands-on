@@ -19,7 +19,7 @@ configurations {
     }
 }
 
-bootJar.archiveName = "${project.name}.jar"
+bootJar.archiveFileName= "${project.name}.jar"
 
 repositories {
     mavenCentral()
@@ -28,6 +28,10 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Prometheus & Spring Boot Actuator integration
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

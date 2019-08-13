@@ -24,7 +24,7 @@ if [[ $rc != 0 ]] ;then
   exit 1
 fi
 
-sleep 30
+sleep 60
 
 # MetalLB
 kubectl create namespace metallb-system
@@ -55,7 +55,7 @@ if [[ $rc != 0 ]] ;then
   exit 1
 fi
 
-sleep 60
+sleep 100
 
 kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/cstor-pool-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/storageclass.yaml

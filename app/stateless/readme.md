@@ -1,3 +1,5 @@
+# Stateless Application(Deployment)
+
 ## github-service
 
 ```bash
@@ -7,8 +9,6 @@ cat k8s/github-service/secret.yaml | \
    sed -e "s/user: ''/user: $GITHUB_USER/g" | \
    sed -e "s/password: ''/password: $GITHUB_PASSWORD/g" | \
    kubectl apply -f-
-   
-kubectl apply -f k8s/github-service/github-api.yaml
 kubectl apply -f k8s/github-service/service.yaml
 kubectl apply -f k8s/github-service/deployment.yaml
 ```
@@ -42,7 +42,7 @@ kubectl apply -f k8s/repo-search-ui/service.yaml
 
 ```
 
-# Ingress
+## Ingress
 
 ```bash
 openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=frieza.local/O=Mamezou"
