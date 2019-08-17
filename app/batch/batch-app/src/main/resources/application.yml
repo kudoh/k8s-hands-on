@@ -14,3 +14,7 @@ mybatis:
 file:
   mount-path: /data
 
+prometheus:
+  enabled: false
+  push-address: localhost:9091
+

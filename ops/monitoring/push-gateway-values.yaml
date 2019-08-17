@@ -1,0 +1,8 @@
+serviceAccount:
+  create: false
+  name: prometheus-operator-prometheus
+serviceMonitor:
+  enabled: true
+  namespace: prom
+  selector:
+    release: prometheus-operator

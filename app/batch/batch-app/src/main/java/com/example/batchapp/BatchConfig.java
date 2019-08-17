@@ -25,11 +25,12 @@ import java.util.Map;
 public class BatchConfig {
 
     @Bean
-    Job uploadJob(JobBuilderFactory jobBuilderFactory) {
+    Job uploadJob(JobBuilderFactory jobBuilderFactory, MetricsCollector metricsCollector) {
 
         return jobBuilderFactory.get("uploadJob")
                 .start(uploadStep(null))
                 .incrementer(new RunIdIncrementer())
+                .listener(metricsCollector)
                 .build();
     }
 

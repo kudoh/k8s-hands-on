@@ -1,0 +1,19 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-batch-app
+spec:
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: batch-app
+        spec:
+          containers:
+          - name: batch-app
+            env:
+            # Promeheus Integration
+            - name: PROMETHEUS_ENABLED
+              value: "true"
+            - name: PROMETHEUS_PUSH_ADDRESS
+              value: prometheus-pushgateway.prom.svc.cluster.local:9091

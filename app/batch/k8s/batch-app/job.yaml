@@ -13,7 +13,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: batch-app
-        image: kudohn/batch-app:v1
+        image: kudohn/batch-app:v1.1
         imagePullPolicy: IfNotPresent
         args:
           - file.name=''

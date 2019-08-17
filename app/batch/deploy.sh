@@ -11,7 +11,7 @@ helm upgrade nfs-server-provisioner --install stable/nfs-server-provisioner --na
    --set persistence.enabled=true --set persistence.storageClass=openebs-sparse-sc \
    --set persistence.size=10Gi --set service.type=NodePort \
    --set service.nfsNodePort=32000 --set service.mountdNodePort=30050
-kubectl apply -f k8s/nfs/pvc.yaml
+kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/batch/k8s/nfs/pvc.yaml
 
 VOL_NAME=$(kubectl get pvc nfs-pvc -o jsonpath='{.spec.volumeName}')
 

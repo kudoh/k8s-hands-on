@@ -16,19 +16,16 @@ helm upgrade prometheus-operator --install stable/prometheus-operator \
 kubectl get svc -n prom -l app=prometheus-operator-prometheus -o custom-columns=IP:status.loadBalancer.ingress[0].ip,PORT:spec.ports[0].nodePort
 ```
 
-## run app
+## run web app
 
 ```bash
 GITHUB_USER=<your-github-userid>
 GITHUB_PASS=<your-github-password>
-bash <(curl -s https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/deploy.sh) $GITHUB_USER $GITHUB_PASS
 
 ../../app/stateless/deploy.sh $GITHUB_USER $GITHUB_PASS
-../../app/batch/deploy.sh $GITHUB_USER $GITHUB_PASS
 
 # undeploy
 ../../app/stateless/undeploy.sh
-../../app/batch/undeploy.sh
 ```
 
 ## ServiceMonitor
@@ -38,3 +35,37 @@ kubectl apply -f servicemonitor.yaml
 ```
 
 /etc/prometheus/config_out/prometheus.env.yaml
+
+## PushGateway
+
+```bash
+cat << EOF > push-gateway-values.yaml
+serviceAccount:
+  create: false
+  name: prometheus-operator-prometheus
+serviceMonitor:
+  enabled: true
+  namespace: prom
+  selector:
+    release: prometheus-operator
+EOF
+
+# 現時点の最新版1.0.0, 1.0.1は動作しない
+# https://github.com/prometheus/pushgateway/issues/278
+helm upgrade prometheus-pushgateway --install stable/prometheus-pushgateway \
+  --namespace prom --version 0.4.1 -f push-gateway-values.yaml
+
+echo "some_metric 3.14" | curl --data-binary @- http://prometheus-pushgateway.prom.svc.cluster.local:9091/metrics/job/some_job
+
+```
+
+## Run Batch app
+
+```bash
+../../app/batch/deploy.sh $GITHUB_USER $GITHUB_PASS
+# enable prometheus
+kubectl patch cj cron-batch-app -p "$(cat prom-cronjob_patch.yaml)"
+
+# undeploy
+../../app/batch/undeploy.sh
+```
