@@ -83,5 +83,5 @@ helm upgrade prometheus-operator --install stable/prometheus-operator \
 ## Grafana
 
 ```bash
-helm upgrade prometheus-operator --set stable/prometheus-operator --reuse-values
+helm upgrade prometheus-operator stable/prometheus-operator --set grafana.service.type=LoadBalancer --reuse-values
 ```
