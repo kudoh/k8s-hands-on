@@ -1,0 +1,60 @@
+alertmanager:
+  config:  
+    global:
+      resolve_timeout: 5m
+      slack_api_url: "https://hooks.slack.com/services/xxxxx/xxxxx"
+    # Alert通知先(テストなので通知先Channelは全部同じ)
+    receivers:
+    - name: mamezou-ops
+      slack_configs:
+      - channel: '#prometheus'
+        send_resolved: true
+    - name: frieza
+      slack_configs:
+      - channel: '#prometheus'
+        send_resolved: true
+        title_link: http://172.16.20.12:9090/#/alerts?receiver=frieza
+        pretext: "初めてですよ…ここまで私をコケにしたおバカさん達は…"
+    - name: dodoria
+      slack_configs:
+      - channel: '#prometheus'
+        title_link: http://172.16.20.12:9090/#/alerts?receiver=dodoria
+        pretext: "追うんですよ、ドドリアさん！つかまえなさい！"
+    - name: zarbon
+      slack_configs:
+      - channel: '#prometheus'
+        title_link: http://172.16.20.12:9090/#/alerts?receiver=zarbon
+        pretext: "ザーボンさん。御覧なさい。綺麗な花火ですよ。"
+    # Alert Route Tree
+    route:
+      group_by:
+      - job
+      group_interval: 5m
+      group_wait: 30s
+      # default receiver
+      receiver: frieza
+      # 本来はもっと長い値(3H~)
+      repeat_interval: 5m
+      # child routes. override
+      routes:
+      - receiver: dodoria
+        match:
+          job: github-service
+        routes:
+        - receiver: mamezou-ops
+          match:
+            severity: critical
+      - receiver: zarbon
+        match:
+          job: batch-app
+        routes:
+        - receiver: mamezou-ops
+          match:
+            severity: critical
+    # Alertの嵐を避けるための抑止ルール
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['job']

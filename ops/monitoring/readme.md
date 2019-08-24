@@ -54,9 +54,6 @@ EOF
 # https://github.com/prometheus/pushgateway/issues/278
 helm upgrade prometheus-pushgateway --install stable/prometheus-pushgateway \
   --namespace prom --version 0.4.1 -f push-gateway-values.yaml
-
-echo "some_metric 3.14" | curl --data-binary @- http://prometheus-pushgateway.prom.svc.cluster.local:9091/metrics/job/some_job
-
 ```
 
 ## Run Batch app
@@ -68,4 +65,23 @@ kubectl patch cj cron-batch-app -p "$(cat prom-cronjob_patch.yaml)"
 
 # undeploy
 ../../app/batch/undeploy.sh
+```
+
+## Alerting
+
+```bash
+# apply alerting rule
+kubectl apply -f app-alert-rule.yaml
+
+# specify slack receiver
+helm upgrade prometheus-operator --install stable/prometheus-operator \
+  --version 6.4.3 --namespace prom \
+  --set prometheus.service.type=LoadBalancer \
+  -f slack-alert-config.yaml --reset-values
+```
+
+## Grafana
+
+```bash
+helm upgrade prometheus-operator --set stable/prometheus-operator --reuse-values
 ```

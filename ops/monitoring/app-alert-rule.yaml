@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: app-alert-rule
+  labels:
+    # PrometheusリソースのデフォルトRuleSelector
+    app: prometheus-operator
+    release: prometheus-operator
+spec:
+  groups:
+  # Spring Boot + Micrometer alerting rule
+  - name: github-service
+    rules:
+    - alert: heap_over_30
+      annotations:
+        message: '"{{ $labels.job }}": use heap memory over ({{ $value }}).'
+      expr: sum(jvm_memory_used_bytes{area="heap", app="github-service"})*100/sum(jvm_memory_max_bytes{area="heap", app="github-service"}) >= 30
+      for: 3m
+      labels:
+        severity: warning
+        job: github-service
+    - alert: heap_over_50
+      annotations:
+        message: '"{{ $labels.job }}": use heap memory over ({{ $value }}).'
+      expr: sum(jvm_memory_used_bytes{area="heap", app="github-service"})*100/sum(jvm_memory_max_bytes{area="heap", app="github-service"}) >= 50
+      for: 1m
+      labels:
+        severity: critical
+        job: github-service
+  # Spring Batch PushGateway alerting rule
+  - name: batch-app
+    rules:
+    - alert: batch_duration_over_1_5_seconds
+      annotations:
+        message: '"{{ $labels.job }}": execution duration is {{ $value }} seconds.'
+      expr: batch_job_duration_seconds{job="uploadJob"} >= 1.5
+      labels:
+        severity: warning
+        job: batch-app
+    - alert: batch_duration_over_2_seconds
+      annotations:
+        message: '"{{ $labels.job }}": execution duration is ({{ $value }}) seconds.'
+      expr: batch_job_duration_seconds{job="uploadJob"} >= 2
+      labels:
+        severity: critical
+        job: batch-app
