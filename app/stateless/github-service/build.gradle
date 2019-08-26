@@ -28,6 +28,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.opentracing.contrib:opentracing-spring-jaeger-web-starter:2.0.3'
 
     // Prometheus & Spring Boot Actuator integration
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
