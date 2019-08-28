@@ -16,7 +16,9 @@
     "express": "~4.16.1",
     "express-validator": "^5.3.1",
     "ioredis": "^4.10.0",
+    "jaeger-client": "^3.15.0",
     "morgan": "~1.9.1",
+    "opentracing": "^0.14.4",
     "redis-json": "^2.2.2"
   }
 }

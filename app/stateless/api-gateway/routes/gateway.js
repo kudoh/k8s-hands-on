@@ -1,11 +1,11 @@
 const express = require('express');
 const Redis = require('ioredis');
+const webClient = require('./webClient');
 const axios = require('axios');
 const JSONCache = require('redis-json');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
 
-const serviceURL = process.env.SERVICE_URL || 'http://localhost:8080/github/'
 const redisPort = process.env.REDIS_PORT || 6379
 const redisHost = process.env.REDIS_HOST || 'localhost'
 const redisPassword = process.env.REDIS_PASSWORD || null
@@ -17,11 +17,6 @@ const redis = new Redis({
 });
  
 const jsonCache = new JSONCache(redis, {prefix: 'cache:'});
-
-const client = axios.create({
-  baseURL: serviceURL,
-  timeout: 5000
-});
 
 router.get('/repos', check('query').not().isEmpty(), checkValidationResult, async (req, res, next) => {
 
@@ -38,7 +33,7 @@ router.get('/repos', check('query').not().isEmpty(), checkValidationResult, asyn
   }
 
   console.log("cache not found. consult to github-service...")
-  client.get(`/repos?query=${query}`)
+  webClient(req).get(`/repos?query=${query}`)
     .then(async result => {
       console.log(`retrieved github data successfully. caching for next request.`)
       if (result.data.length === 0) {
