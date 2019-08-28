@@ -14,3 +14,18 @@ management:
           - health
           # expose prometheus metrics endpoint
           - prometheus
+
+
+opentracing:
+  jaeger:
+    enabled: false
+    service-name: github-servicve
+    const-sampler:
+      decision: true # always sampling for verification
+    udp-sender:
+      host: localhost
+      port: 6831
+
+logging:
+  level:
+    io.opentracing.contrib.tracerresolver.TracerResolver: error
