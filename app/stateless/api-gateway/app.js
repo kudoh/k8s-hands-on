@@ -4,6 +4,7 @@ const logger = require('morgan');
 const cors = require('cors')
 const tracer = require('./tracer')
 const { Tags, FORMAT_HTTP_HEADERS } = require('opentracing');
+const url = require('url');
 
 const gatewayRouter = require('./routes/gateway');
 
@@ -23,8 +24,8 @@ app.use('/health', (req, res) => {
 app.use((req, res, next) => {
 
   const parentSpanContext = tracer.extract(FORMAT_HTTP_HEADERS, req.headers);
-
-  const span = tracer.startSpan('web_api', {
+  
+  const span = tracer.startSpan(url.parse(req.url).pathname, {
     childOf: parentSpanContext,
     tags: {[Tags.SPAN_KIND]: Tags.SPAN_KIND_RPC_SERVER}
   });

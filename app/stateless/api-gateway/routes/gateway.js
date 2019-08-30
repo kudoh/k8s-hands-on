@@ -1,7 +1,7 @@
 const express = require('express');
 const Redis = require('ioredis');
 const webClient = require('./webClient');
-const axios = require('axios');
+const { Tags } = require('opentracing');
 const JSONCache = require('redis-json');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
@@ -24,7 +24,7 @@ router.get('/repos', check('query').not().isEmpty(), checkValidationResult, asyn
 
   const query = req.query.query;
 
-  const response = await jsonCache.get(query);
+  const response = await withTrace(req, () => jsonCache.get(query));
 
   if (response) {
     console.log(`retrieved from Cache. query: ${query}`)  
@@ -39,7 +39,7 @@ router.get('/repos', check('query').not().isEmpty(), checkValidationResult, asyn
       if (result.data.length === 0) {
         res.status(200).json([]);
       } else {
-        await jsonCache.set(query, result.data, {expire: 60 * 60});
+        await withTrace(req, () => jsonCache.set(query, result.data, {expire: 60 * 60}));
         res.status(200).json(result.data);
       }
     })
@@ -55,6 +55,26 @@ function checkValidationResult(req, res, next) {
     return res.status(400).json({ errors: errors.array() });
   }
   next();
+}
+
+async function withTrace(req, fun) {
+  
+  const query = req.query.query;
+  const tracer = req.span.tracer();
+  const span = tracer.startSpan(`Redis:${query}`, {
+    childOf: req.span.context(),
+    tags: {[Tags.SPAN_KIND]: Tags.SPAN_KIND_RPC_CLIENT}
+  });
+  span.setTag(Tags.PEER_SERVICE, 'redis');
+  span.setTag(Tags.PEER_HOSTNAME, redisHost);
+  span.setTag(Tags.PEER_PORT, redisPort)
+  span.log({event: 'redis_cache', query: query});
+
+  try {
+    return fun.apply();
+  } finally {
+    span.finish();
+  }
 }
 
 // for Maintenance

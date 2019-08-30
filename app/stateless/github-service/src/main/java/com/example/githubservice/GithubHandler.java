@@ -1,6 +1,7 @@
 package com.example.githubservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,10 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Slf4j
 @Component
 public class GithubHandler {
@@ -25,14 +26,6 @@ public class GithubHandler {
     private final ObjectMapper objectMapper ;
     private final GithubProps props;
     private final WebClient client;
-
-    public GithubHandler(ObjectMapper objectMapper, GithubProps props) {
-        this.objectMapper = objectMapper;
-        this.props = props;
-        this.client = WebClient.builder()
-                .baseUrl(props.getBaseUrl())
-                .build();
-    }
 
     Mono<ServerResponse> query(ServerRequest request) {
 

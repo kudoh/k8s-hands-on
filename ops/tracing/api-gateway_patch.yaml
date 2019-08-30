@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  annotations:
+    # jaeger-operatorがSidecarコンテナとしてCollectorを注入する  
+    sidecar.jaegertracing.io/inject: "true"
+spec:
+  template:
+    spec:
+      containers:
+      - name: api-gateway
+        image: kudohn/api-gateway:v1.2
+        # https://github.com/jaegertracing/jaeger-client-node#environment-variables
+        env:
+        - name: JAEGER_SAMPLER_TYPE
+          value: const
+        - name: JAEGER_SAMPLER_PARAM
+          value: "1"

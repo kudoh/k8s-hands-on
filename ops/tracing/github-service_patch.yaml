@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-service
+  annotations:
+    # jaeger-operatorがSidecarコンテナとしてCollectorを注入する  
+    sidecar.jaegertracing.io/inject: "true"
+spec:
+  template:
+    spec:
+      containers:
+      - name: github-service
+        image: kudohn/github-service:v1.2
+        env:
+        # Tracing有効化  
+        - name: OPENTRACING_JAEGER_ENABLED
+          value: "true"

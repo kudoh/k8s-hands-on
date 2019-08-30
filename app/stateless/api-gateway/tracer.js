@@ -11,5 +11,5 @@ const options = {
 options.tags[appName + '.version'] = appVersion;
 
 const tracer = initTracerFromEnv(jaegerConfig, options);
-console.log(tracer)
+
 module.exports = tracer;
