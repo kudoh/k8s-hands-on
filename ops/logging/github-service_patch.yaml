@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: github-service
+        image: kudohn/github-service:v1.3
+        env:
+        # enable custom logback.xml
+        - name: LOGGING_CONFIG
+          value: /usr/local/app/logback/logback-spring.xml
+        # 起動時のspring bootバナーは雑音でしかないので無効化
+        - name: SPRING_MAIN_BANNER_MODE
+          value: "off"
+        # logback-spring.xmlをMount
+        volumeMounts:
+        - name: logback-config
+          mountPath: /usr/local/app/logback
+          readOnly: true
+      volumes:
+      - name: logback-config
+        configMap:
+          name: spring-logback-config

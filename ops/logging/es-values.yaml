@@ -1,0 +1,16 @@
+replicas: 2
+esJavaOpts: "-Xmx768m -Xms768m"
+resources:
+  requests:
+    cpu: 100m
+    memory: 1024Mi
+  limits:
+    cpu: 1000m
+    memory: 1536Mi
+volumeClaimTemplate:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: openebs-hostpath

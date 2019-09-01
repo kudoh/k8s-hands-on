@@ -33,6 +33,9 @@ dependencies {
     // Prometheus & Spring Boot Actuator integration
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
+    // logstash json format for k8s
+    runtimeOnly 'net.logstash.logback:logstash-logback-encoder:6.1'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
