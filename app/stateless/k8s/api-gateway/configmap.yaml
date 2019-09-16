@@ -6,7 +6,7 @@ metadata:
     app: api-gateway
 data:
   # backend service
-  serviceURL: http://github-service.default.svc.cluster.local/github
+  serviceURL: http://github-service/github
   # redis for cache
   redisHost: redis-master.redis.svc.cluster.local
   redisPort: "6379"
