@@ -106,7 +106,7 @@ kind: Deployment
 metadata:
   name: sample-final
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
