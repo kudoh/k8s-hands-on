@@ -1,0 +1,40 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gateway-vs
+spec:
+  hosts:
+  - "test.frieza.local"
+  gateways:
+  - canary-gateway
+  http:
+  # v1は何かあったときのために別のURIでトラフィックを流しておく
+  - match:
+    - uri:
+        prefix: /v1
+    # /v1 -> / に書き換え
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: sample
+        subset: v1
+  # 社内環境向けにはfinalバージョンを提供
+  - match:
+    - uri:
+        prefix: /
+      headers:
+        x-client-type: 
+          exact: internal
+    route:
+    - destination:
+        host: sample
+        subset: final
+  # v2が安定したので、商用環境向けに変更する
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: sample
+        subset: v2

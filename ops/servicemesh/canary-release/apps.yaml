@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample
+spec:
+  selector:
+    app: sample
+  ports:
+  - port: 8000
+    targetPort: http
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goapp
+data:
+  main-v1.go: |-
+    package main
+
+    func main() {
+      StartServer("第一形態ですよ。私の戦闘力は53万でふ。。。")
+    }
+  main-v2.go: |-
+    package main
+
+    func main() {
+      StartServer("第二形態ですぅ。このバージョンアップで戦闘力は100万を超えますぅ")
+    }
+  main-final.go: |-
+    package main
+
+    func main() {
+      StartServer("ついに最終形態ですよ！！惑星ごと消し去ってくれるわ！！")
+    }
+  server.go: |-
+    package main
+
+    import (
+      "fmt"
+      "net/http"
+    )
+
+    func StartServer(msg string) {
+      http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintf(w, msg)
+      })
+      http.ListenAndServe(":8000", nil)
+    }
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sample-v1
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: sample
+        version: v1
+    spec:
+      containers:
+      - name: sample
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/main-v1.go /app/server.go"]
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sample-v2
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: sample
+        version: v2
+    spec:
+      containers:
+      - name: sample
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/main-v2.go /app/server.go"]
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sample-final
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sample
+        version: final
+    spec:
+      containers:
+      - name: sample
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/main-final.go /app/server.go"]
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp
