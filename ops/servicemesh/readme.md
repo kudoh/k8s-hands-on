@@ -89,3 +89,16 @@ export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -
 export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
 export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
 ```
+
+## Canary Release
+
+```bash
+kubectl apply -n dev -f canary-release/apps.yaml
+kubectl apply -n dev -f canary-release/gateway.yaml
+kubectl apply -n dev -f canary-release/destinationrule.yaml
+kubectl apply -n dev -f canary-release/gateway-vs-canary0.yaml
+
+kubectl apply -n dev -f canary-release/gateway-vs-canary1.yaml
+
+kubectl apply -n dev -f canary-release/gateway-vs-canary2.yaml
+```
