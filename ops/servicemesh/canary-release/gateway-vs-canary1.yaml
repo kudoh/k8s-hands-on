@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: gateway-vs
+  name: canary-gateway-vs
   labels:
     app: sample
 spec:
@@ -10,7 +10,7 @@ spec:
   gateways:
   - canary-gateway
   http:
-  # 社内環境向けには次期バージョンのv2,10%のユーザにはさらに進化したfinalバージョンを提供
+  # 社内環境向けには次期バージョンのv2,20%のユーザにはさらに進化したfinalバージョンを提供
   - match:
     - uri:
         prefix: /

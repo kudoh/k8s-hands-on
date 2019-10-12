@@ -10,7 +10,7 @@ metadata:
     certmanager.k8s.io/issuer: "prod-letsencrypt"
     certmanager.k8s.io/acme-challenge-type: http01
 spec:
-  # 自己署名の証明書のキーペアを含むSecretリソースを指定する
+  # Let's Encrypt の証明書のキーペアを含むSecretリソースを指定する
   tls:
   - hosts:
     - cloud.github.frieza.dev

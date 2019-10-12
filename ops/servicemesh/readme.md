@@ -101,4 +101,19 @@ kubectl apply -n dev -f canary-release/gateway-vs-canary0.yaml
 kubectl apply -n dev -f canary-release/gateway-vs-canary1.yaml
 
 kubectl apply -n dev -f canary-release/gateway-vs-canary2.yaml
+
+# check request routing
+INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -v -H 'Host:test.frieza.local' $INGRESS_HOST ;echo
+```
+
+## Fault Tolerance
+
+```bash
+kubectl apply -n dev -f timeout/app.yaml
+kubectl apply -n dev -f timeout/gateway.yaml
+kubectl apply -n dev -f timeout/gateway-vs.yaml
+
+INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -v -H 'Host:timeout.frieza.local' $INGRESS_HOST/sleep/1s ;echo
 ```

@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sleeper-gateway-vs
+  labels:
+    app: sleeper
+spec:
+  hosts:
+  - "timeout.frieza.local"
+  gateways:
+  - sleeper-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /sleep
+    route:
+    - destination:
+        host: sleeper
+    # 1秒経過でタイムアウトさせる
+    timeout: 1s
