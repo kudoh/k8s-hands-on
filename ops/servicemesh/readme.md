@@ -110,10 +110,17 @@ curl -v -H 'Host:test.frieza.local' $INGRESS_HOST ;echo
 ## Fault Tolerance
 
 ```bash
-kubectl apply -n dev -f timeout/app.yaml
-kubectl apply -n dev -f timeout/gateway.yaml
-kubectl apply -n dev -f timeout/gateway-vs.yaml
+kubectl apply -n dev -f timeout/
 
 INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 curl -v -H 'Host:timeout.frieza.local' $INGRESS_HOST/sleep/1s ;echo
+```
+
+## Retry
+
+```bash
+kubectl apply -n dev -f retry/
+
+INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -v -H 'Host:retry.frieza.local' $INGRESS_HOST/retry ;echo
 ```
