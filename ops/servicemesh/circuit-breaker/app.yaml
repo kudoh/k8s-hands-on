@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: circuit-breaking
+  labels:
+    app: circuit-breaking
+spec:
+  selector:
+    app: circuit-breaking
+  ports:
+  - port: 8000
+    targetPort: http
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goapp
+  labels:
+    app: circuit-breaking
+data:
+  fragile.go: |-
+    package main
+
+    import (
+      "fmt"
+      "log"
+      "math/rand"
+      "net/http"
+      "os"
+      "time"
+    )
+
+    func main() {
+      fmt.Println("running server...")
+      rand.Seed(time.Now().UnixNano())
+      http.HandleFunc("/", randomFailure)
+      http.ListenAndServe(":8000", nil)
+    }
+
+    func randomFailure(w http.ResponseWriter, r *http.Request) {
+      log.Println("received request")
+      v := rand.Intn(10) + 1
+      now := time.Now().Format("2006-01-02 15:04:05")
+      if v > 5 {
+        log.Printf("failure(%d)", v)
+        w.WriteHeader(504)
+        fmt.Fprintf(w, "%s (%s) (Error)今のは痛かった…痛かったぞーーー！！", now, os.Getenv("POD_NAME"))
+      } else {
+        log.Printf("sucess(%d)", v)
+        w.WriteHeader(200)
+        fmt.Fprintf(w, "%s (%s) (Success)ふっふっふ・・こうみえてもボクはやさしいんだ。ときどき成功するんだよ", now, os.Getenv("POD_NAME"))
+      }
+    }
+  stable.go: |-
+    package main
+
+    import (
+      "fmt"
+      "log"
+      "net/http"
+      "os"
+      "time"
+    )
+
+    func main() {
+      fmt.Println("running server...")
+      http.HandleFunc("/", success)
+      http.ListenAndServe(":8000", nil)
+    }
+
+    func success(w http.ResponseWriter, r *http.Request) {
+      log.Println("received request")
+      now := time.Now().Format("2006-01-02 15:04:05")
+      w.WriteHeader(200)
+      fmt.Fprintf(w, "%s (%s) (Stable)お待たせしましたね…さぁて、第２回戦と行きましょうか…", now, os.Getenv("POD_NAME"))
+    }
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: fragile-app
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: circuit-breaking
+      annotations:
+        sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc  
+    spec:
+      containers:
+      - name: fragile-app
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/fragile.go"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:  
+              fieldPath: metadata.name  
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: stable-app
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: circuit-breaking
+      annotations:
+        sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc  
+    spec:
+      containers:
+      - name: stable-app
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/stable.go"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:  
+              fieldPath: metadata.name  
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp

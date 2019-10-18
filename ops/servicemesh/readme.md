@@ -64,7 +64,7 @@ kubectl apply -n dev \
   -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/app/stateless/k8s/repo-search-ui/service.yaml
 ```
 
-## IngressGateway/EgressGateway
+## IngressGateway
 
 ```bash
 # SSL Certificate
@@ -109,6 +109,8 @@ curl -v -H 'Host:test.frieza.local' $INGRESS_HOST ;echo
 
 ## Fault Tolerance
 
+### Timeout
+
 ```bash
 kubectl apply -n dev -f timeout/
 
@@ -116,11 +118,30 @@ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonp
 curl -v -H 'Host:timeout.frieza.local' $INGRESS_HOST/sleep/1s ;echo
 ```
 
-## Retry
+### Retry
 
 ```bash
 kubectl apply -n dev -f retry/
 
 INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 curl -v -H 'Host:retry.frieza.local' $INGRESS_HOST/retry ;echo
+```
+
+### Circuit Breaker
+
+```bash
+kubectl apply -n dev -f circuit-breaker/
+
+POD=$(kubectl get pod -n dev -l app=circuit-breaking -o jsonpath='{.items[0].metadata.name}')
+# dump envoy config
+kubectl exec -it $POD -c istio-proxy -n dev  -- sh -c 'curl localhost:15000/config_dump'
+# show envoy stats
+# kubectl exec $POD -n dev -c istio-proxy -- pilot-agent request GET stats | grep fragile-app | grep pending
+# using istioctl
+# istioctl proxy-config endpoint $POD -n dev --cluster "outbound|8000||fragile-app.dev.svc.cluster.local"
+
+INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+while true; do curl -s -H 'Host:circuit-braking.frieza.local' $INGRESS_HOST; echo; sleep 1; done
+
+hey -c 10 -z 20s --host fragile-app.frieza.local http://$INGRESS_HOST
 ```

@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: circuit-breaking
+  labels:
+    app: circuit-breaking
+spec:
+  host: circuit-breaking.dev.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp: {}
+      http: {}
+    outlierDetection:
+      consecutiveErrors: 1
+      interval: 1s
+      baseEjectionTime: 20s
+      maxEjectionPercent: 100
+      minHealthPercent: 0
