@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rate-limit
+  labels:
+    app: rate-limit
+spec:
+  selector:
+    app: rate-limit
+  ports:
+  - port: 8000
+    targetPort: http
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goapp
+  labels:
+    app: rate-limit
+data:
+  main.go: |-
+    package main
+
+    import (
+      "fmt"
+      "log"
+      "net/http"
+      "strings"
+      "time"
+    )
+
+    func main() {
+      fmt.Println("running server...")
+      http.HandleFunc("/sleep/", sleeper)
+      http.ListenAndServe(":8000", nil)
+    }
+
+    func sleeper(w http.ResponseWriter, r *http.Request) {
+      s := strings.TrimPrefix(r.URL.Path, "/sleep/")
+      d, e := time.ParseDuration(s)
+      if e != nil {
+        w.WriteHeader(400)
+        fmt.Fprintf(w, "unknown param [%s] [%s]", s, e)
+        return
+      }
+      time.Sleep(d)
+      log.Printf("I slept for %0.1f seconds", d.Seconds())
+      fmt.Fprintf(w, "私を %0.1f 秒も待たせましたね", d.Seconds())
+    }
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: rate-limit
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: rate-limit
+    spec:
+      containers:
+      - name: rate-limit
+        image: golang:1.13
+        ports:
+          - name: http
+            containerPort: 8000
+        command: ["sh", "-c", "go run /app/main.go"]
+        volumeMounts:
+        - name: goapp
+          mountPath: /app
+      volumes:
+        - name: goapp
+          configMap:
+            name: goapp

@@ -136,12 +136,26 @@ POD=$(kubectl get pod -n dev -l app=circuit-breaking -o jsonpath='{.items[0].met
 # dump envoy config
 kubectl exec -it $POD -c istio-proxy -n dev  -- sh -c 'curl localhost:15000/config_dump'
 # show envoy stats
-# kubectl exec $POD -n dev -c istio-proxy -- pilot-agent request GET stats | grep fragile-app | grep pending
+# kubectl exec $POD -n dev -c istio-proxy -- pilot-agent request GET stats | grep circuit-breaking | grep pending
 # using istioctl
-# istioctl proxy-config endpoint $POD -n dev --cluster "outbound|8000||fragile-app.dev.svc.cluster.local"
+# istioctl proxy-config endpoint $POD -n dev --cluster "outbound|8000||circuit-breaker.dev.svc.cluster.local"
 
 INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-while true; do curl -s -H 'Host:circuit-braking.frieza.local' $INGRESS_HOST; echo; sleep 1; done
+while true; do curl -s -H 'Host:circuit-breaking.frieza.local' $INGRESS_HOST; echo; sleep 1; done
 
-hey -c 10 -z 20s --host fragile-app.frieza.local http://$INGRESS_HOST
+hey -c 10 -z 20s --host circuit-breaking.frieza.local http://$INGRESS_HOST
+```
+
+### Rate Limiting
+
+```bash
+kubectl -n dev apply -f rate-limiting/
+
+INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+# INGRESS_GW=$(kubectl -n istio-system get pod -l app=istio-ingressgateway -o jsonpath='{.items[0].metadata.name}')
+# kubectl annotate pod $INGRESS_GW -n istio-system sidecar.istio.io/statsInclusionPrefixes='cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc'
+# kubectl exec $INGRESS_GW -n istio-system -c istio-proxy -- pilot-agent request GET stats | grep rate-limit | grep pending
+
+hey -q 10 -n 100 --host rate-limit.frieza.local http://$INGRESS_HOST/sleep/1s
 ```

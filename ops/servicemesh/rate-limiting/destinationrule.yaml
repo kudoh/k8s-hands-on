@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: rate-limit
+  labels:
+    app: rate-limit
+spec:
+  host: rate-limit
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 10
+        connectTimeout: 300ms
+      http:
+        http1MaxPendingRequests: 10
