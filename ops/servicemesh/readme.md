@@ -68,7 +68,14 @@ kubectl apply -n dev \
 
 ```bash
 # SSL Certificate
-openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=frieza.local/O=Mamezou"
+#openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=frieza.local/O=Mamezou"
+
+# chrome require SAN section, so use openssl1.1 but libressl
+brew install openssl@1.1
+export PATH="/usr/local/Cellar/openssl@1.1/1.1.1d/bin:$PATH"
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=frieza.local/O=Mamezou" \
+  -addext 'subjectAltName = DNS:*.frieza.local'
+
 kubectl create secret tls istio-ingressgateway-certs --key tls.key --cert tls.crt -n istio-system
 
 export INGRESS_POD=$(kubectl get pod -n istio-system -l app=istio-ingressgateway -o jsonpath='{.items[0].metadata.name}')
@@ -158,4 +165,32 @@ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonp
 # kubectl exec $INGRESS_GW -n istio-system -c istio-proxy -- pilot-agent request GET stats | grep flow-control | grep pending
 
 hey -q 10 -n 100 --host flow-control.frieza.local http://$INGRESS_HOST/sleep/1s
+```
+
+## Security
+
+### Authentication
+
+```bash
+# disable livenessProbe/readinessProbe
+kubectl patch deploy -n dev github-service --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/readinessProbe"}]'
+kubectl patch deploy -n dev github-service --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/livenessProbe"}]'
+kubectl patch deploy -n dev api-gateway --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/readinessProbe"}]'
+kubectl patch deploy -n dev api-gateway --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/livenessProbe"}]'
+kubectl patch deploy -n dev repo-search-ui --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/readinessProbe"}]'
+kubectl patch deploy -n dev repo-search-ui --type='json' \
+  -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/livenessProbe"}]'
+
+kubectl apply -f authentication/meshpolicy.yaml
+kubectl apply -f authentication/mtls-destinationrule.yaml
+
+kubectl run hacker --restart=Never -it --rm --generator run-pod/v1 --image tutum/curl \
+  -- curl -v http://api-gateway.dev.svc.cluster.local/api/v1/repos?query=test
+kubectl run -n dev hacker --restart=Never -it --rm --generator run-pod/v1 --image tutum/curl \
+  -- curl -v http://api-gateway.dev.svc.cluster.local/api/v1/repos?query=test
 ```
