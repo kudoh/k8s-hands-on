@@ -1,9 +1,9 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: rate-limit-gateway
+  name: flow-control-gateway
   labels:
-    app: rate-limit
+    app: flow-control
 spec:
   selector:
     istio: ingressgateway
@@ -13,4 +13,4 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "rate-limit.frieza.local"
+    - "flow-control.frieza.local"

@@ -1,18 +1,18 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: rate-limit-gateway-vs
+  name: flow-control-gateway-vs
   labels:
-    app: rate-limit
+    app: flow-control
 spec:
   hosts:
-  - "rate-limit.frieza.local"
+  - "flow-control.frieza.local"
   gateways:
-  - rate-limit-gateway
+  - flow-control-gateway
   http:
   - match:
     - uri:
         prefix: /sleep
     route:
     - destination:
-        host: rate-limit
+        host: flow-control

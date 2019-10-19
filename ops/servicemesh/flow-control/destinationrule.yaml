@@ -1,11 +1,11 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: rate-limit
+  name: flow-control
   labels:
-    app: rate-limit
+    app: flow-control
 spec:
-  host: rate-limit
+  host: flow-control
   trafficPolicy:
     connectionPool:
       tcp:

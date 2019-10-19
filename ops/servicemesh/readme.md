@@ -146,16 +146,16 @@ while true; do curl -s -H 'Host:circuit-breaking.frieza.local' $INGRESS_HOST; ec
 hey -c 10 -z 20s --host circuit-breaking.frieza.local http://$INGRESS_HOST
 ```
 
-### Rate Limiting
+### Flow Control
 
 ```bash
-kubectl -n dev apply -f rate-limiting/
+kubectl -n dev apply -f flow-controling/
 
 INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 # INGRESS_GW=$(kubectl -n istio-system get pod -l app=istio-ingressgateway -o jsonpath='{.items[0].metadata.name}')
 # kubectl annotate pod $INGRESS_GW -n istio-system sidecar.istio.io/statsInclusionPrefixes='cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc'
-# kubectl exec $INGRESS_GW -n istio-system -c istio-proxy -- pilot-agent request GET stats | grep rate-limit | grep pending
+# kubectl exec $INGRESS_GW -n istio-system -c istio-proxy -- pilot-agent request GET stats | grep flow-control | grep pending
 
-hey -q 10 -n 100 --host rate-limit.frieza.local http://$INGRESS_HOST/sleep/1s
+hey -q 10 -n 100 --host flow-control.frieza.local http://$INGRESS_HOST/sleep/1s
 ```

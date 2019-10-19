@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rate-limit
+  name: flow-control
   labels:
-    app: rate-limit
+    app: flow-control
 spec:
   selector:
-    app: rate-limit
+    app: flow-control
   ports:
   - port: 8000
     targetPort: http
@@ -16,7 +16,7 @@ kind: ConfigMap
 metadata:
   name: goapp
   labels:
-    app: rate-limit
+    app: flow-control
 data:
   main.go: |-
     package main
@@ -51,16 +51,16 @@ data:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: rate-limit
+  name: flow-control
 spec:
   replicas: 2
   template:
     metadata:
       labels:
-        app: rate-limit
+        app: flow-control
     spec:
       containers:
-      - name: rate-limit
+      - name: flow-control
         image: golang:1.13
         ports:
           - name: http
