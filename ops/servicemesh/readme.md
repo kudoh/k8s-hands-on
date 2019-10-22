@@ -212,4 +212,11 @@ kubectl exec hacker -n dev -c hacker -- curl -s -i api-gateway.dev.svc.cluster.l
 API_GW=$(kubectl get pod -n dev -l app=api-gateway -o jsonpath='{.items[0].metadata.name}')
 kubectl exec -it -n dev ${API_GW} -c api-gateway -- curl -i github-service/github/admin
 kubectl exec -it -n dev ${API_GW} -c api-gateway -- curl -X POST -i github-service/github/repos?query=hacking
+
+kubectl run cache-exploiter -n redis --restart=Never --generator run-pod/v1 \
+  --image redis --env REDISCLI_AUTH=frieza-redis-pass -- sleep 3600
+
+kubectl exec cache-exploiter -it -n redis -c cache-exploiter bash
+redis-cli -h redis-master
+> ping "exploit"
 ```
