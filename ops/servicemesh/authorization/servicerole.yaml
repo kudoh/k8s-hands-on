@@ -1,0 +1,62 @@
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRole
+metadata:
+  name: ui-viewer
+  namespace: dev
+spec:
+  rules:
+  - services: ["repo-search-ui.dev.svc.cluster.local"]
+    methods: ["GET"]
+    constraints:
+    - key: destination.namespace
+      values: ["dev"]
+    - key: destination.port
+      values: ["80"]
+---
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRole
+metadata:
+  name: api-viewer
+  namespace: dev
+spec:
+  rules:
+  - services: ["api-gateway.dev.svc.cluster.local"]
+    methods: ["GET"]
+    paths:
+    - /api/v1/repos*
+    constraints:
+    - key: destination.namespace
+      values: ["dev"]
+    - key: destination.port
+      values: ["3000"]
+---
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRole
+metadata:
+  name: github-viewer
+  namespace: dev
+spec:
+  rules:
+  - services: ["github-service.dev.svc.cluster.local"]
+    methods: ["GET"]
+    paths:
+    - "/github/repos*"
+    constraints:
+    - key: destination.namespace
+      values: ["dev"]
+    - key: destination.port
+      values: ["8080"]
+---
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRole
+metadata:
+  name: redis-cache
+  namespace: redis
+spec:
+  rules:
+  - services: ["redis-master.redis.svc.cluster.local"]
+    constraints:
+    - key: destination.namespace
+      values: ["redis"]
+    - key: destination.port
+      values: ["6379"]

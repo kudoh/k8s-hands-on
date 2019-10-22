@@ -191,6 +191,25 @@ kubectl apply -f authentication/mtls-destinationrule.yaml
 
 kubectl run hacker --restart=Never -it --rm --generator run-pod/v1 --image tutum/curl \
   -- curl -v http://api-gateway.dev.svc.cluster.local/api/v1/repos?query=test
-kubectl run -n dev hacker --restart=Never -it --rm --generator run-pod/v1 --image tutum/curl \
-  -- curl -v http://api-gateway.dev.svc.cluster.local/api/v1/repos?query=test
+```
+
+### Authorization
+
+```bash
+kubectl apply -f authorization/rbacconfig.yaml
+
+kubectl create sa api-gateway -n dev
+kubectl patch -n dev deploy api-gateway --patch '{"spec": {"template": {"spec": {"serviceAccountName": "api-gateway"}}}}'
+kubectl create sa github-service -n dev
+kubectl patch -n dev deploy github-service --patch '{"spec": {"template": {"spec": {"serviceAccountName": "github-service"}}}}'
+
+kubectl apply -f authorization/servicerole.yaml -f authorization/servicerolebinding.yaml
+
+# Test
+kubectl run hacker -n dev --restart=Never --generator run-pod/v1 --image tutum/curl -- sleep 3600
+kubectl exec hacker -n dev -c hacker -- curl -s -i api-gateway.dev.svc.cluster.local/api/v1/repos?query=hacking
+
+API_GW=$(kubectl get pod -n dev -l app=api-gateway -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -it -n dev ${API_GW} -c api-gateway -- curl -i github-service/github/admin
+kubectl exec -it -n dev ${API_GW} -c api-gateway -- curl -X POST -i github-service/github/repos?query=hacking
 ```

@@ -1,0 +1,53 @@
+# IngressGateway -> repo-search-ui
+apiVersion: rbac.istio.io/v1alpha1
+kind: ServiceRoleBinding
+metadata:
+  name: ui-viewer
+  namespace: dev
+spec:
+  subjects:
+  # istio-ingressgatewayに割り当てられているServiceAccount
+  - user: "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+  roleRef:
+    kind: ServiceRole
+    name: ui-viewer
+---
+# IngressGateway -> api-gateway
+apiVersion: rbac.istio.io/v1alpha1
+kind: ServiceRoleBinding
+metadata:
+  name: api-viewer
+  namespace: dev
+spec:
+  subjects:
+  # istio-ingressgatewayに割り当てられているServiceAccount
+  - user: "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+  roleRef:
+    kind: ServiceRole
+    name: api-viewer
+---
+# api-gateway -> github-service
+apiVersion: rbac.istio.io/v1alpha1
+kind: ServiceRoleBinding
+metadata:
+  name: github-viewer
+  namespace: dev
+spec:
+  subjects:
+  - user: "cluster.local/ns/dev/sa/api-gateway"
+  roleRef:
+    kind: ServiceRole
+    name: github-viewer
+---
+# api-gateway -> Redis
+apiVersion: rbac.istio.io/v1alpha1
+kind: ServiceRoleBinding
+metadata:
+  name: redis-cache
+  namespace: redis
+spec:
+  subjects:
+  - user: "cluster.local/ns/dev/sa/api-gateway"
+  roleRef:
+    kind: ServiceRole
+    name: "redis-cache"
