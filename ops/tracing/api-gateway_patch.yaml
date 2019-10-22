@@ -13,6 +13,8 @@ spec:
         image: kudohn/api-gateway:v1.2
         # https://github.com/jaegertracing/jaeger-client-node#environment-variables
         env:
+        - name: JAEGER_DISABLED
+          value: "false"
         - name: JAEGER_SAMPLER_TYPE
           value: const
         - name: JAEGER_SAMPLER_PARAM

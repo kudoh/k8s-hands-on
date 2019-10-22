@@ -76,6 +76,8 @@ spec:
               secretKeyRef:
                 name: redis-secret
                 key: password
+          - name: JAEGER_DISABLED
+            value: "true"
         # Node.jsはリソース効率がいいのでこの程度で十分
         # QoSはBurstableでk8sが柔軟にスケジュールできるようにする
         resources: 
