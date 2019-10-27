@@ -220,3 +220,14 @@ kubectl exec cache-exploiter -it -n redis -c cache-exploiter bash
 redis-cli -h redis-master
 > ping "exploit"
 ```
+
+## Monitoring(kiali)
+
+```bash
+kubectl create secret generic kiali -n istio-system \
+  --from-literal=username=mamezou \
+  --from-literal=passphrase=kiali-pass
+
+kubectl patch -n istio-system svc kiali --patch='{"spec":{"type": "LoadBalancer"}}'
+kubectl get -n istio-system svc kiali -o custom-columns="IP:status.loadBalancer.ingress[0].ip,Port:spec.ports[0].nodePort
+```
