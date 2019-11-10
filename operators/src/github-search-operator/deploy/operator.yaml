@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-search-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: github-search-operator
+  template:
+    metadata:
+      labels:
+        name: github-search-operator
+    spec:
+      serviceAccountName: github-search-operator
+      containers:
+        - name: github-search-operator
+          #image: kudohn/github-search-operator:v1.0.0
+          image: kudohn/github-search-operator:v0.0.2
+          command:
+          - github-search-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              # 空文字に変更
+              value: ""
+              # valueFrom:
+              #   fieldRef:
+              #     fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "github-search-operator"

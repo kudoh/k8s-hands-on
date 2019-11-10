@@ -1,0 +1,15 @@
+# RoleBinding -> ClusterRoleBinding
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: github-search-operator
+subjects:
+- kind: ServiceAccount
+  name: github-search-operator
+  # 追加(Operatorが動作するNamespace)
+  namespace: operator
+roleRef:
+  # Role -> ClusterRole  
+  kind: ClusterRole
+  name: github-search-operator
+  apiGroup: rbac.authorization.k8s.io

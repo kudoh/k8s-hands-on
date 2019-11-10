@@ -1,0 +1,7 @@
+apiVersion: mamezou.com/v1
+kind: GithubSearch
+metadata:
+  name: example-github-search
+spec:
+  clusterSize: 1
+  serviceType: NodePort
