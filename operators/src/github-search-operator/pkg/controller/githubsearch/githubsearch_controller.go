@@ -117,7 +117,6 @@ func (r *ReconcileGithubSearch) Reconcile(request reconcile.Request) (reconcile.
 			// 既存サービスがCustom Resourceに定義されたDesiredな状態でない -> 更新
 			reqLogger.Info("Updating existing Service", svcKeys...)
 			service.ObjectMeta = existingSvc.ObjectMeta
-			service.Spec.ClusterIP = existingSvc.Spec.ClusterIP
 			_ = controllerutil.SetControllerReference(instance, service, r.scheme)
 			if err := r.client.Update(context.TODO(), service); err != nil {
 				return reconcile.Result{}, err
@@ -148,7 +147,7 @@ func (r *ReconcileGithubSearch) Reconcile(request reconcile.Request) (reconcile.
 			return reconcile.Result{}, err
 		}
 	} else if !reflect.DeepEqual(deployment.Spec, existingDeploy.Spec) {
-		// 既存サービスがCustom Resourceに定義されたDesiredな状態でない -> 更新
+		// 既存DeploymentがCustom Resourceに定義されたDesiredな状態でない -> 更新
 		reqLogger.Info("Updating existing Deployment", deployKeys...)
 		service.ObjectMeta = existingSvc.ObjectMeta
 		_ = controllerutil.SetControllerReference(instance, deployment, r.scheme)
