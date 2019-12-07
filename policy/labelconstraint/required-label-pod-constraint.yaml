@@ -1,7 +1,7 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: LabelConstraint
 metadata:
-  name: deny-no-owner-constraint
+  name: required-label-constraint
 spec:
   match:
     kinds:
