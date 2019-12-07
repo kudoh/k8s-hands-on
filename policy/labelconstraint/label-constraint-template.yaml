@@ -1,0 +1,33 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: labelconstraint
+spec:
+  crd:
+    spec:
+      names:
+        kind: LabelConstraint
+        listKind: LabelConstraintList
+        plural: labelConstraints
+        singular: labelConstraint
+      validation:
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
+              items: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package labelConstraint
+
+        violation[{"msg": msg}] {
+
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          
+          missing := required - provided
+          count(missing) > 0
+
+          msg := sprintf("rejected!! you must specify required labels[%v].", [missing])
+        }

@@ -1,0 +1,44 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: containerconstraint
+spec:
+  crd:
+    spec:
+      names:
+        kind: ContainerConstraint
+        listKind: ContainerConstraintList
+        plural: containerConstraints
+        singular: containerConstraint
+      validation:
+        openAPIV3Schema:
+          properties:
+            imagePrefixes:
+              type: array
+              items: string
+            groups:
+              type: array
+              items: string
+
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package containerConstraint
+
+        violation[{"msg": msg}] {
+          providedGroup := {group | not startswith(input.review.userInfo.groups[i], "system"); group := input.review.userInfo.groups[i]}
+          targetGroup := {group | group := input.parameters.groups[_]}
+          diff := targetGroup - providedGroup
+          count(diff) == 0
+          
+          requiredPrefix := {prefix | prefix := input.parameters.imagePrefixes[_]}
+          mainContainer  := {image | image := input.review.object.spec.containers[_].image}
+          initContainer  := {image | image := input.review.object.spec.initContainers[_].image}
+          providedImage := mainContainer | initContainer
+          target := providedImage[_]
+          satisfy := {good | prefix := requiredPrefix[_]; good := startswith(target, prefix)}
+          not any(satisfy)
+
+          msg := sprintf("sorry... your group[%v] cannot create given container image!!\n expected image prefix is %v, but your image is %v\n", 
+                        [providedGroup, requiredPrefix, target])
+        }

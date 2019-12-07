@@ -1,0 +1,12 @@
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+  labels:
+    mamezou.com/owner: kudoh
+    mamezou.com/system: PoC
+spec:
+  containers:
+  - image: busybox:latest
+    name: my-app
