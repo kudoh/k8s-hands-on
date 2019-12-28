@@ -41,7 +41,7 @@ spec:
   - metadata:
       name: mongo-pvc
     spec:
-      storageClassName: openebs-sparse-sc
+      storageClassName: openebs-cstor-sparse
       accessModes:
         - ReadWriteOnce
       resources:

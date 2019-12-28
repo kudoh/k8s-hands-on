@@ -47,17 +47,24 @@ if [[ $rc != 0 ]] ;then
 fi
 
 # OpenEBS
+for n in $(kubectl get node -l 'node-role.kubernetes.io/master!=' -o jsonpath='{.items[*].metadata.name}' | grep -i worker); do 
+  kubectl label nodes $n node=openebs
+done
 kubectl create ns openebs
-helm upgrade openebs --install stable/openebs --namespace openebs
+helm upgrade openebs --install stable/openebs --namespace openebs --version 1.5.0 \
+  --set apiserver.sparse.enabled=true \
+  --set ndm.sparse.path="/var/openebs/sparse" \
+  --set ndm.sparse.count=1 \
+  --set ndm.sparse.size=32212254720 \
+  --wait
+
 rc=$?
 if [[ $rc != 0 ]] ;then
   echo "unable to install OpenEBS..."
   exit 1
 fi
 
-sleep 100
-
-kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/cstor-pool-config.yaml
-kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/storageclass.yaml
+# kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/cstor-pool-config.yaml
+# kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/storage/storageclass.yaml
 
 echo "Done!!"

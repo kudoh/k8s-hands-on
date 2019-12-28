@@ -147,6 +147,8 @@ EOF
         vb.memory = 2048
         vb.cpus = 2
       end
+      # vagrant plugin install vagrant-disksize
+      master.disksize.size = '20GB'
       # 全部手動でやる場合は以下をコメントアウト
       master.vm.provision "shell", inline: $master_node_script
     end
@@ -163,6 +165,8 @@ EOF
         vb.memory = 4096
         vb.cpus = 1
       end
+      # vagrant plugin install vagrant-disksize
+      worker.disksize.size = '50GB'
       # 全部手動でやる場合は以下をコメントアウト
       worker.vm.provision "shell", inline: $worker_node_script
     end

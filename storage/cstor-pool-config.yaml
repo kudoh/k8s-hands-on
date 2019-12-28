@@ -1,3 +1,4 @@
+# Created by OpenEBS...(apiserver.sparse.enabled=true)
 apiVersion: openebs.io/v1alpha1
 kind: StoragePoolClaim
 metadata:
@@ -13,7 +14,6 @@ metadata:
             memory: 1Gi
 spec:
   name: cstor-pool
-  type: sparse
   # Poolインスタンスの数。Node数以下にする必要がある
   maxPools: 3
   poolSpec:
