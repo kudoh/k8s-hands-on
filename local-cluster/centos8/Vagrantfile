@@ -1,6 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+####################################################################
+# this config is not working... k8s not yet support centos8
+####################################################################
+
 k8s_version = "1.17"
 
 Vagrant.configure("2") do |config|
@@ -16,7 +20,7 @@ Vagrant.configure("2") do |config|
   sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
   # yumパッケージ最新化
-  yum update -y
+  dnf update -y
 
   # yumリポジトリにkubernetesリポジトリを追加
   cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -25,20 +29,23 @@ name=Kubernetes
 baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
 enabled=1
 gpgcheck=1
-repo_gpgcheck=0
+repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kube*
 EOF
 
-  VERSION=$(yum list kubeadm --showduplicates --disableexcludes=kubernetes | sort -r | grep #{k8s_version} | head -1 | awk '{print $2}')
-  yum install -y kubeadm-$VERSION kubelet-$VERSION kubectl-$VERSION --disableexcludes=kubernetes
+  VERSION=$(dnf list kubeadm --showduplicates --disableexcludes=kubernetes -y | sort -r | grep #{k8s_version} | head -1 | awk '{print $2}')
+  dnf install -y kubelet-$VERSION kubeadm-$VERSION kubectl-$VERSION --disableexcludes=kubernetes
   systemctl enable kubelet && systemctl start kubelet
 
   # Containerd
   # https://kubernetes.io/docs/setup/cri/#containerd
+  cat > /etc/modules-load.d/containerd.conf <<EOF
+overlay
+br_netfilter
+EOF
   modprobe overlay
   modprobe br_netfilter
-  
+
   # Setup required sysctl params, these persist across reboots.
   cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
 net.bridge.bridge-nf-call-iptables  = 1
@@ -49,7 +56,7 @@ EOF
   # Install containerd
   ## Set up the repository
   ### Install required packages
-  yum install yum-utils device-mapper-persistent-data lvm2 -y
+  dnf install yum-utils device-mapper-persistent-data lvm2 -y
   
   ### Add docker repository
   yum-config-manager \
@@ -57,7 +64,7 @@ EOF
       https://download.docker.com/linux/centos/docker-ce.repo
   
   ## Install containerd
-  yum install containerd.io -y
+  dnf install containerd.io -y
   
   # Configure containerd
   mkdir -p /etc/containerd
@@ -68,8 +75,8 @@ EOF
   
   # Network Pluginの要件  
   # https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#network-plugin-requirements
-  sysctl net.bridge.bridge-nf-call-iptables=1
-  sysctl net.bridge.bridge-nf-call-ip6tables=1
+  # sysctl net.bridge.bridge-nf-call-iptables=1
+  # sysctl net.bridge.bridge-nf-call-ip6tables=1
 
   sysctl --system
 
@@ -81,8 +88,8 @@ EOF
   systemctl restart kubelet
   
   # Install iSCSI for OpenEBS
-  yum install iscsi-initiator-utils -y
-  systemctl enable iscsid && sudo systemctl start iscsid
+  dnf install iscsi-initiator-utils -y
+  systemctl enable iscsid && systemctl start iscsid
 
   SCRIPT
 
@@ -132,19 +139,20 @@ EOF
     -out $SHARED_DIR/k8s-admin.crt -sha256
   kubectl create clusterrolebinding --clusterrole=cluster-admin --user admin local-admin
 
-  cp $MASTER_PKI/ca.crt $SHARED_DIR/ca.crt
+  rm -f $SHARED_DIR/ca.crt
+  cp -f $MASTER_PKI/ca.crt $SHARED_DIR/ca.crt
   
   SCRIPT
 
   $worker_node_script = <<-SCRIPT
 
-  echo "woker node settings..."
+  echo "worker node settings..."
 
   sh /home/vagrant/shared/kubeadm_join_cmd.sh
 
   SCRIPT
   
-  config.vm.provision "shell", inline: $common_setup_script
+  #config.vm.provision "shell", inline: $common_setup_script
 
   # Master Node  
   (1..1).each do |i|
@@ -162,7 +170,7 @@ EOF
       # vagrant plugin install vagrant-disksize
       master.disksize.size = '20GB'
       # 全部手動でやる場合は以下をコメントアウト
-      master.vm.provision "shell", inline: $master_node_script
+      # master.vm.provision "shell", inline: $master_node_script
     end
   end
 
@@ -181,7 +189,7 @@ EOF
       # vagrant plugin install vagrant-disksize
       worker.disksize.size = '50GB'
       # 全部手動でやる場合は以下をコメントアウト
-      worker.vm.provision "shell", inline: $worker_node_script
+      # worker.vm.provision "shell", inline: $worker_node_script
     end
   end
 end
