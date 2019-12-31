@@ -24,7 +24,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 
 # MetalLB
 kubectl create namespace metallb-system
-helm upgrade metallb --install stable/metallb --namespace metallb-system
+helm upgrade metallb --install stable/metallb --namespace metallb-system --wait
 kubectl apply -f https://raw.githubusercontent.com/kudoh/k8s-hands-on/master/ingress/metallb-configmap.yaml
 rc=$?
 if [[ $rc != 0 ]] ;then
@@ -35,7 +35,8 @@ fi
 sleep 30
 
 # Nginx Ingress Controller
-helm upgrade nginx-ingress --install stable/nginx-ingress --set controller.replicaCount=2
+kubectl create ns nginx-ingress
+helm upgrade nginx-ingress --install stable/nginx-ingress  --namespace nginx-ingress --set controller.replicaCount=2 --set rbac.create=true --wait
 rc=$?
 if [[ $rc != 0 ]] ;then
   echo "unable to install Ingress Controller..."
